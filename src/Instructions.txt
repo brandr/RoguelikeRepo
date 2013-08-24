@@ -1,0 +1,168 @@
+Instructions (press esc to return to game)
+
+INTRODUCTION:
+
+Your goal in this game is to traverse the dungeons, 
+killing  monsters and collecting treasure. You start 
+at the dungeons' entrance, represented by 
+the @ symbol. The · symbols represent open squares, 
+the letters represent monsters, and other characters 
+represent items sitting on the ground.
+
+CHARACTER CREATION MENU:
+
+Here you can create your hero by setting stats, 
+race, and class.
+
+STATS:
+
+*Strength: improves your damage with heavy weapons,
+like maces, clubs, and long swords.Also increases 
+your chance to stun an enemy.
+
+*Dexterity: improves your damage with light weapons,
+like short swords and bows. Also increases 
+your chance of a critical hit when attacking.
+
+*Fortitude: improves your starting HP and rate of
+HP regeneration.
+
+*Perception: this does nothing yet. Sorry about that.
+
+*Willpower: improves your starting MP and rate of 
+MP regeneration.
+
+*Intelligence: makes you level up faster.
+
+*Luck: this does nothing yet. I'll add something later, 
+I promise.
+
+(Races and classes vary slightly, but I forget how.)
+
+CONTROLS: (case-sensitive)
+
+-Movement: use numpad or arrow keys. 
+If you use numpad, turn numlock on.
+
+-Attack: move towards an enemy to attack automatically.
+	*if an enemy "shrugs off" an attack, 
+	it does no damage.
+
+-Inventory: 
+	*press 'i' to open your inventory
+	screen and 'esc' to close it. 
+	*The letters shown by your items 
+	are associated with each item. 
+	Press an item's 
+	letter to select it when you are
+	prompted to choose an item. 
+	*A number in ( ) states how many 
+	of each item you have, 
+	assuming you have more 
+	than 1. 
+	*An [E] means you have the 
+	item equipped.
+
+-Equip: 'E'
+
+-Throw: 't'
+	*You can also shoot projectiles 
+	by pressing 't' and 
+	selecting them, assuming you
+	have the proper weapon equipped 
+	for shooting them. 
+	(for instance, you can equip 
+	a bow and then use 
+	't' to shoot arrows with it.)
+
+-Drink a potion: 'q'
+	*Some potions are harmful 
+	when swallowed. However, you may 
+	find another use for them.
+
+-Eat something: 'e'
+	*Right now eating has no effect.
+
+-Drop an item: 'd' or 'D'
+	*If you use 'D' on a stack of 
+	multiple items, (like arrows) 
+	you can choose how many to drop.
+
+-Manually pick up an item in your 
+	current tile: ','
+	*You will normally pick up items 
+	automatically when you step on 
+	the tile containing them. However, 
+	if you drop an item, or if autopickup 
+	is turned off, you can pick items 
+	up with this command.
+
+-Turn off autopickup: '@'
+
+-Cast a spell: 'Z'
+	*You will be shown the current 
+	spells that you know. If you
+	 have enough MP, you can cast them.
+
+-Go down stairs: '>'
+	*while standing on a '>' tile,
+	(down stairs), you can press this 
+	to go down.
+
+-Go up stairs: '<'
+	*while standing on a '<' tile, 
+	(up stairs), you can press this 
+	to go up.
+
+-Open or close a door: 'o'
+	*you must be standing next to a 
+	door to open or close it.
+
+-Wait a turn: '.'
+	*Press this to stay where you are, 
+	allowing other events to occur 
+	(such as monster movement and 
+	HP/MP regeneration).
+
+-Open instructions: '?'
+
+SYMBOLS:
+
+@: you, the player.
+
+g: a goblin. This is a weak, early-level creature.
+
+s: a skeleton. A slightly stronger creature.
+
+f: a fairy. These are exceedingly rare.
+
+(there are many other monsters to encounter.)
+
+· : an open tile.
+
+X: a wall.
+
++: a closed door.
+
+- or |: an open door.
+
+#: a tunnel.
+
+>: down stairs.
+
+<: up stairs.
+
+$: gold.
+
+%: food.
+
+!: a potion.
+
+): a weapon.
+
+[: a piece of armor.
+
+-,/,|: arrows, bolts, or some other type of ammo. 
+(The different symbols are for when they are shot 
+in different directions.)
+

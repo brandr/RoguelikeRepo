@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<materials>
+<material>
+    <materialName>cloth</materialName>
+    <powerMultiplier>0.4</powerMultiplier>
+    <qualityMultiplier>1.4</qualityMultiplier>
+    <weightMultiplier>0.2</weightMultiplier> 
+    	<weakAgainst>diamond</weakAgainst>
+    	<weakAgainst>iron</weakAgainst>
+</material>
+<material>
+    <materialName>diamond</materialName>
+    <powerMultiplier>1.6</powerMultiplier>
+    <qualityMultiplier>1.4</qualityMultiplier>
+    <weightMultiplier>1.2</weightMultiplier> 
+    	<strongAgainst>bone</strongAgainst>
+    	<strongAgainst>flesh</strongAgainst>
+    	<strongAgainst>iron</strongAgainst>
+    	<strongAgainst>wood</strongAgainst>
+    	<invincibleAgainst>cloth</invincibleAgainst>
+</material>
+<material>
+    <materialName>iron</materialName>
+    <powerMultiplier>1.0</powerMultiplier>
+    <qualityMultiplier>1.0</qualityMultiplier>
+    <weightMultiplier>1.0</weightMultiplier> 
+    	<weakAgainst>diamond</weakAgainst>
+    	<strongAgainst>cloth</strongAgainst>		
+   		<strongAgainst>wood</strongAgainst>		
+</material>
+<material>
+    <materialName>wood</materialName>
+    <powerMultiplier>0.8</powerMultiplier>
+    <qualityMultiplier>1.2</qualityMultiplier>
+    <weightMultiplier>0.6</weightMultiplier> 
+    	<weakAgainst>iron</weakAgainst>
+    	<weakAgainst>diamond</weakAgainst>
+</material>
+<material>
+    <materialName>bone</materialName>
+    <powerMultiplier>0.9</powerMultiplier>
+    <qualityMultiplier>1.2</qualityMultiplier>
+    <weightMultiplier>0.8</weightMultiplier> 
+    	<weakAgainst>diamond</weakAgainst>
+    <spawnable>false</spawnable>
+</material>
+<material>
+    <materialName>flesh</materialName>
+    <powerMultiplier>0.6</powerMultiplier>
+    <qualityMultiplier>1.0</qualityMultiplier>
+    <weightMultiplier>0.6</weightMultiplier> 
+    	<weakAgainst>diamond</weakAgainst>
+    <spawnable>false</spawnable>
+</material>
+</materials>

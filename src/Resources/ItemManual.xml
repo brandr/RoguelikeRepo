@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items>
+    <armors>
+        <armor>
+            <minimumDepth>1</minimumDepth>				
+      		<maximumDepth>6</maximumDepth>				
+			<itemName>iron boots</itemName>				
+			<armorType>feet</armorType>
+
+			<spawnChance>0.4</spawnChance>
+			
+			<power>2</power>
+        </armor>
+    </armors>
+    <potions>
+        
+    </potions>
+</items>
