@@ -36,7 +36,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	static final String TO_HIT = "toHit";
 	static final String EVASION_VALUE = "evasionValue";
 	
-	static final String XP_REWARD = "xpReward";
+	static final String XP_REWARD = "xpReward";	//TODO: remove this.
 	
 	static final String SPAWN_CHANCE = "spawnChance";
 	
@@ -54,19 +54,6 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	static final String HANDS="hands";
 	static final String POWER="power";
 	static final String ARMOR_TYPE="armorType";
-	
-	/*public static void setup(){	this will be useful if we find a way to make all of these variables belong to the whole class,
-	 * rather than individual methods. If this cannot be done, this method won't be as useful (but may still be rewritten with args.)
-		try{
-		monsterInput = new FileInputStream("MonsterManual.xml");
-		XMLInputFactory xmlInFact = XMLInputFactory.newInstance();
-        reader = xmlInFact.createXMLEventReader(monsterInput);
-		}catch(IOException exc) {
-	    }catch(XMLStreamException exc) {
-	    }
-	}*/
-
-	//static InputStream monsterInput = Thread.currentThread().getContextClassLoader().getResourceAsStream("MonsterManual.xml");
 	
 	public static void addDungeonMonsters(Dungeon dungeon){		//add monsters to the appropriate level in the dungeon
 		try { 
@@ -86,7 +73,6 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	    	int baseArmor=-1;		//TODO: set defaults for all of these based on dungeon depth.
 	    	int toHit=-1;
 	    	int evasionValue=-1;
-	    	
 	    	int xp=-1;
 	    	
 	    	double spawnChance=1.0;
@@ -242,24 +228,19 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        			
 	        			Monster addedMonster=new Monster();
         				//TODO: set all defaults here
-        				if(hitPoints==-1){
+        				if(hitPoints==-1)
         					hitPoints=getDefaultHitPoints(minDepth,maxDepth);
-        				}
-        				if(baseDamage==-1){
+        				if(baseDamage==-1)
         					baseDamage=getDefaultBaseDamage(minDepth,maxDepth);
-        				}
-        				if(baseArmor==-1){
+        				if(baseArmor==-1)
         					baseArmor=getDefaultBaseArmor(minDepth,maxDepth);
-        				}
-        		    	if(toHit==-1){
+        		    	if(toHit==-1)
         		    		toHit=getDefaultToHit(minDepth,maxDepth);
-        		    	}
-        		    	if(evasionValue==-1){
+        		    	if(evasionValue==-1)
         		    		evasionValue=getDefaultEvasionValue(minDepth,maxDepth);
-        		    	}
-        		    	if(xp==-1){
+        		    	if(xp==-1)
         		    		xp=getDefaultXp(minDepth,maxDepth);
-        		    	}
+        		    	
         		    	
         		    	
         		    	addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!

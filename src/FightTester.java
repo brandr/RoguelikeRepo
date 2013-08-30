@@ -42,8 +42,8 @@ reorganize the monster class so that monster-only methods are in a separate sect
 massive monster overhaul (Robert)
 	*gradient spawning
 	*AI types (just add an "unintelligent" one for testing)
-	*inventory creation (random monster items, gold, "layouts", etc.)
 	*slightly better chasing AI
+	*inventory creation (random monster items, gold, "layouts", etc.)
 	*item seeking? (might branch too much into more complex AI)
 	*other stuff as I think of it
 

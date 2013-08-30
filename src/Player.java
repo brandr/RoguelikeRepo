@@ -51,7 +51,7 @@ public class Player extends Monster{
 	
 	public String statsDisplay(){
 		String statString="";
-		for(int i=0;i<7;i++){
+		for(int i=0;i<stats.length;i++){	
 			statString+=statAbbreviation(i)+": "+stats[i]+"\n";
 		}
 		return statString;
@@ -904,7 +904,7 @@ public class Player extends Monster{
 	public Experience playerExperience=new Experience();
 	protected int[] magicPoints={0,0};
 	private int[] hungerPoints={0,0};
-	private int[] stats= new int[7];
+	private int[] stats= new int[7];			//consider getting the '7' (number of stats) from a more central source.
 	public Spell[] spells = new Spell[100];		//should monsters have spells like this, too?
 	//idea: could make a double-array of spells for different schools, or just 6 different arrays. (model the structure after Nick's
 	//non-code structure after it is confirmed.)
