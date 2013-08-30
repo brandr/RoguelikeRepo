@@ -631,10 +631,14 @@ public class Monster extends Entity{
 			changeCurrentMessage(currentMessageName()+" shrugged it off.",currentTile,false);
 		}
 		hitPoints[0]-=damage;
-		if(hitPoints[0]<=0){	//case for a monster dying
-			die(attacker.name);
-			if(attacker.getClass().equals(Player.class))	//player gains exp for monster's death
-				((Player)attacker).gainExp(calculateXpReward());
+		if(hitPoints[0]<=0){//case for a monster dying
+			if(attacker == null)
+				die("an unknown cause");
+			else{
+				die(attacker.name);
+				if(attacker.getClass().equals(Player.class))	//player gains exp for monster's death
+					((Player)attacker).gainExp(calculateXpReward());
+			}
 		}
 	}
 	
@@ -679,7 +683,7 @@ public class Monster extends Entity{
 	
 	public void die(String causeOfDeath){				//develop this more		(drop items, can no longer perform actions, object gets deleted, more specific message appears, etc.)	
 		
-		if(getClass()==Player.class){		//if the player dies, call a separate method.
+		if(getClass().equals(Player.class)){		//if the player dies, call a separate method.
 			RogueLikeGui.playerDeath.playerDies(causeOfDeath);	
 		}
 			
@@ -689,7 +693,7 @@ public class Monster extends Entity{
 			equippedItems.unequipAll();
 			dropAllItems();	//will want to make monsters drop their gold, too.
 			currentTile.addGold(inventory.takeAllGold());
-			currentTile.addItem(new Food(name+" corpse",hitPoints[1]*3));	//currently, a monster's corpse's nutritional value is based on its max HP.
+			currentTile.addItem(new Food(name+" corpse",(20+(hitPoints[1]*4))));	//currently, a monster's corpse's nutritional value is based on its max HP.
 			currentTile.clear();
 			currentLevel.removeMonster(this);
 		}	
