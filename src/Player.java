@@ -7,7 +7,7 @@ public class Player extends Monster{
 	public static final String PLAYER_COLOR="931D1D";
 	
 	public static final String[] BURDEN_STATES={"","burdened","strained","overtaxed"};
-	public static final String[] HUNGER_STATES={"full","","hungry","very hungry","near starving","starving"};
+	
 	
 	public Player() {
 		name = null;
@@ -46,7 +46,6 @@ public class Player extends Monster{
 		info+="MP: "+showMagicPoints()+"\n";
 		info+="Armor: "+armorRating()+"\n";
 		info+=burdenState();
-		info+=hungerState();
 		return info;
 	}
 	
@@ -86,12 +85,11 @@ public class Player extends Monster{
 		if(stunCountDown>0)		//cannot stun repeatedly with STR-based stuns.
 			stunCountDown--;
 		regenStep();
-		hungerStep();
 		
 		Monster[] otherMonsters=currentLevel.levelMonsters;
 		for(int i=0;i<otherMonsters.length;i++){
 			if(otherMonsters[i]!=null
-				&&!(otherMonsters[i].equals(this))){		//!= might not be a sophisticated enough operator here, once there are many monster types
+				&&otherMonsters[i]!=this){		//!= might not be a sophisticated enough operator here, once there are many monster types
 				otherMonsters[i].turn();
 			}	
 		}
@@ -109,14 +107,6 @@ public class Player extends Monster{
 				restoreHp(1);
 			if(WIL()>dice.nextInt(100))
 				restoreMp(1);
-		}
-	}
-	
-	private void hungerStep() {
-		decrementHungerPoints();	
-		if(hungerState().equals("starving"))
-		{
-			takeDamage(3, null, null);
 		}
 	}
 	
@@ -148,6 +138,7 @@ public class Player extends Monster{
 							pickUpAllTileItems();
 				if(currentTile.getClass()==Trap.class)
 					((Trap)currentTile).trigger(this);	//TODO: if the trap can be dodged, switch this with another method for dodging traps.
+				decrementHungerPoints();
 				return;
 				}
 		else if(tile.monster!=null){
@@ -690,7 +681,7 @@ public class Player extends Monster{
 			stats=startingStats;
 			setHitPoints((int)((5.0+(playerRace.HPMod()*(FOR()/5.0)))+playerClass.HPRoll()));		//starting HP is set here.
 			setMagicPoints((int)((5.0+(playerRace.MPMod()*(WIL()/6.0)))+playerClass.MPRoll()));
-			setHungerPoints(1250);	//TODO: this is temporary. set hunger points differently if they vary or have a different constant.
+			setHungerPoints(850);	//TODO: this is temporary. set hunger points differently if they vary or have a different constant.
 		}
 		
 		public void gainStatsRandom(int value) {
@@ -784,7 +775,6 @@ public class Player extends Monster{
 	private void decrementHungerPoints(){		//TODO: figure out how starvation works here. determine proper thresholds.
 		if (hungerPoints[0]>0)
 			hungerPoints[0]--;
-			
 		//System.out.println(hungerPoints[0]);	//uncomment to help test hunger.
 	}
 	
@@ -792,29 +782,6 @@ public class Player extends Monster{
 		return hungerPoints[0]==hungerPoints[1];
 	}
 	
-	public String hungerState(){
-		int points=hungerPoints[0];
-		int index=0;
-		int hungerStatesLength = HUNGER_STATES.length;
-		int[] hungerThresholds = hungerThresholds();
-		while(index < hungerStatesLength-1){
-			if(points >= hungerThresholds[index])
-				return HUNGER_STATES[index];
-			index++;
-		}
-		return HUNGER_STATES[hungerStatesLength-1];
-	}
-	
-	public int[] hungerThresholds(){
-		int[] thresholds=new int[HUNGER_STATES.length-1];
-		int threshold_length = thresholds.length;
-		for(int i=0; i<threshold_length; i++)
-		{
-			thresholds[i]=(int) ((double) (hungerPoints[1])*(1.0-(.2*i)));
-		}
-		return thresholds;
-	}
-
 	//identification-related methods
 	
 	public void identifyAllItems(){
@@ -924,7 +891,7 @@ public class Player extends Monster{
 				return dungeonPotionColors[i];
 		}
 		return null;
-	}
+		}
 	
 	private Random dice=new Random();
 	public boolean gameStarted=false;
