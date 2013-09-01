@@ -891,7 +891,7 @@ public class Player extends Monster{
 				return dungeonPotionColors[i];
 		}
 		return null;
-	}
+		}
 	
 	private Random dice=new Random();
 	public boolean gameStarted=false;
