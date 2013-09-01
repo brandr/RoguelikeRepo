@@ -9,7 +9,8 @@ public class Material {
 	public final static String INVINCIBLE="invincible";
 	
 	public final static String NONE="none";	//means that a material affects another normally
-	
+	public static Material[] allMaterials=MaterialReader.allMaterials();	//TODO: decide whether this should include "flesh"
+	public static Material[] spawnableMaterials=spawnableMaterials();
 	public final static Material BONE=getMaterial("bone");
 	public final static Material FLESH=getMaterial("flesh");
 
@@ -198,7 +199,4 @@ public class Material {
 	
 	private boolean spawnable=true;//determines whether an item can spawn with this material
 	
-	public static Material[] allMaterials=MaterialReader.allMaterials();	//TODO: decide whether this should include "flesh"
-	public static Material[] spawnableMaterials=spawnableMaterials();
-
 }
