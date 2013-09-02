@@ -154,12 +154,12 @@ public class Branch {
 		 return startDepth+branchLength-1;
 	 }
 	
-	 public void addAvailableMonster(Monster monster, int levelIndex) {		//this doesn't seem right, so why does it work for the main branch?
+	/* public void addAvailableMonster(Monster monster, int levelIndex) {		//this doesn't seem right, so why does it work for the main branch?
 		int index=relativeIndex(levelIndex);
 		 if(containsLevel(index)&&getLevel(levelIndex)!=null)
 			 getLevel(levelIndex).addAvailableMonster(monster);
 		 
-	}
+	}*/
 	 
 	 public void addAvailableItem(Item item, int levelIndex) {
 		 int index=relativeIndex(levelIndex);

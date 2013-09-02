@@ -42,8 +42,6 @@ public class Tile {
 	isRoom = b;
 	}	
 	
-     
-
 	//Set icon for a tile
 	public void setIcon(char c) {
 	icon = c;
@@ -117,6 +115,10 @@ public class Tile {
 		}
 		else
 			setIcon(monster.getIcon());
+	}
+	
+	public boolean equalTo(Tile tile) {
+		return xCoord==tile.xCoord&&yCoord==tile.yCoord;
 	}
 	
 	public void addItem(Item newItem){	//TODO: consider checking for stack equivalence here or moving it to the inventory class (the latter would affect monster pickup methods)
@@ -261,6 +263,8 @@ public class Tile {
 	
 	public Monster monster=null;
 	public ItemStack tileItems=new ItemStack();
+
+	
 
 	
 

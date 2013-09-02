@@ -39,6 +39,7 @@ public class ItemReader {
 	
 	static final String ARTIFACTS = "artifacts";
 	static final String TRUE_NAME="trueName";
+	static final String EXCLUDED_MATERIAL="excludedMaterial";
 	
 	//equipment	
 	static final String POWER = "power";
@@ -187,20 +188,16 @@ public class ItemReader {
 			int ammoDepth=currentLevel.ammoDepth();
 			for(int j=0;j<GENERIC_AMMOS.length;j++){
 				int value=GENERIC_AMMOS[j].getOverallValue(); //temporary
-				Material[] materials=Material.suitableMaterials(branch, ammoDepth);
-				for(int m=0;m<materials.length&&materials[m]!=null;m++){
+				//Material[] materials=Material.suitableMaterials(branch, ammoDepth);
+				//for(int m=0;m<materials.length&&materials[m]!=null;m++){
 					Ammo addedAmmo=new Ammo(GENERIC_AMMOS[j]);
-					addedAmmo.setMaterial(new Material(materials[m]), true);
-					addedAmmo.setAmount(ammoAmount(ammoDepth));		//TODO: move this to an ammo item's creation if stack sizes are noticeably repetitive on a level
+					//addedAmmo.setMaterial(new Material(materials[m]), true); //TODO: set ammo material (and amount) only upon the ammo's creatioon.
+				//	addedAmmo.setAmount(ammoAmount(ammoDepth));		//TODO: move this to an ammo item's creation if stack sizes are noticeably repetitive on a level
 					currentLevel.addAvailableItem(addedAmmo, Math.abs(value-ammoDepth));
-				}	
+				//}	
 					//TODO: ask nick if ammo should be associated with branch. also, set material and amount upon an ammo item's creation. (ask nick how to determine bounds for randomizing amount)
 			}
 		}	
-	}
-	
-	private static int ammoAmount(int depth){	//a random ammo amount appropriate at an (already adjusted) depth
-		return Math.min(99,10+dice.nextInt(depth/2+15));
 	}
 	
 	public static Ammo createAmmo(String trueName, String ammoType, int amount, int[] damage, Material material){	//TODO: should ammoType just be genericName?

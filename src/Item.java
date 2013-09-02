@@ -21,7 +21,7 @@ public Item(String name){	//TODO: decide if this is necessary
 }
 
 public Item copyItem(Item toCopy){
-	switch(toCopy.getClass().getCanonicalName()){	//cases are arranged alphabetically
+	switch(toCopy.getClass().getCanonicalName()){	//cases are arranged alphabetically. add more as more item types are added.
 		case("Ammo"):
 			return new Ammo((Ammo)toCopy);
 		case("Armor"):
@@ -54,6 +54,7 @@ public Item singleShot(Inventory itemLocation, char direction, Weapon firedWeapo
 
 	//absract methods
 
+public abstract void initialize(Level level);
 public abstract void use(Monster target);
 public abstract boolean stackEquivalent(Item otherItem);
 public abstract int getOverallValue();
@@ -277,6 +278,8 @@ public static String noOptionsMessage(String itemType) {	//messages for when the
 	}
 }
 
+//available branch methods
+
 public void addAvailableBranch(Branch branch){
 	int index=0;
 	while(index<availableBranches.length&&availableBranches[index]!=null)
@@ -285,12 +288,16 @@ public void addAvailableBranch(Branch branch){
 		availableBranches[index]=branch;
 }
 
+public Branch[] getAvailableBranches(){
+	return availableBranches;
+}
+
 public void setAvailableBranches(Branch[] branches){
 	availableBranches=branches;
 }
 
 public boolean availableInBranch(Branch branch){
-	for(int i=0;i<availableBranches.length&&availableBranches[i]!=null;i++){
+	for(int i=0;i<availableBranches.length;i++){		//no need to check for availableBraches[i]=null because null values are placeholders.
 		if(branch.equals(availableBranches[i]))
 			return true;
 	}
@@ -362,7 +369,35 @@ public String getAmmoStat() {
 		thrownDistance = Math.max(thrownDistance-1,0);
 	}
 	
-private Random dice=new Random();
+//materials that the item cannot be made out of.
+
+public boolean materialAllowed(Material material){
+	for(int i=0;i<excludedMaterials.length&&excludedMaterials[i]!=null;i++){
+		if(excludedMaterials[i].equals(material))
+			return false;
+	}
+	return true;
+}
+	
+public void addExcludedMaterial(Material material){
+	int index=0;
+	while(index<excludedMaterials.length&&excludedMaterials[index]!=null){
+		if(excludedMaterials[index].equals(material))
+			return;
+		index++;
+	}
+	excludedMaterials[index]=material;
+}
+	
+public Material[] getExcludedMaterials() {
+	return excludedMaterials;
+}
+
+public void setExcludedMaterials(Material[] excludedMaterials) {
+	this.excludedMaterials = excludedMaterials;
+}
+
+protected Random dice=new Random();
 	
 protected int tempThrownDamage=0;
 protected int tempThrownToHit=0;
@@ -377,6 +412,7 @@ protected boolean identified=false;
 
 public double spawnChance=1.0;
 private Branch[] availableBranches=new Branch[Dungeon.BRANCH_COUNT];
+private Material[] excludedMaterials=new Material[100];
 
 private double weight;
 

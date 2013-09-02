@@ -27,9 +27,11 @@ public class MonsterGenerator {	//creates random monsters. methods should not be
 	
 	public void step(){		//called at the end of the player's turn. has a small chance to randomly add a known monster to the level.
 		if(monsterRNG.nextInt(150)>147&&knownMonsterCount()>0){
-			dungeonLevel.addMonster(getRandomMonster());
+			dungeonLevel.addMonster(chooseRandomMonster());
 		}
 	}
+	
+	//monster adding methods
 	
 	public void addMonster(Monster newMonster){
 		int index=0;
@@ -51,25 +53,55 @@ public class MonsterGenerator {	//creates random monsters. methods should not be
 			return null;
 	}
 	
-	public Monster getRandomMonster(){		//chooses a random known monster.
-		if(knownMonsterCount()>0){
-			boolean monsterChosen=false;
-			while(!monsterChosen){
-				int monsterIndex=monsterRNG.nextInt(knownMonsterCount());
-				if(getMonster(monsterIndex)!=null
-				&& considerMonster(getMonster(monsterIndex))){	//roll randomly to select a monster. monsters with lower spawn rates are less likely to be chosen.
-					monsterChosen=true;
-					return getMonster(monsterIndex);
-				}
+	//TODO: figure out how to factor in existing monster spawn chance methods neatly.
+	
+	public Monster chooseRandomMonster(){		//chooses a random known monster appropriate for the level.
+		int knownCount=knownMonsterCount();
+		if(knownCount<1)
+			return null;
+		if(knownCount==1)
+			return knownMonsters[0];
+		else if(knownCount>1){
+			int optionCount=(int) Math.max(2, 
+								knownCount/(2.1+0.08*dungeonLevel.monsterDepth()));	//TODO: tweak this formula until it seems right.
+			Monster[] monsterOptions=new Monster[optionCount];	//possible monsters to choose from
+			monsterOptions[0]=randomMonster();
+			for(int i=1;i<optionCount;i++){
+				Monster nextMonster=randomMonster();
+				while(nextMonster.getName().equals(monsterOptions[i-1].getName()))
+					nextMonster=randomMonster();
+				monsterOptions[i]=nextMonster;
 			}
+			return bestMonster(monsterOptions, dungeonLevel.monsterDepth());
 		}
 		return null;
 	}
 	
-	private boolean considerMonster(Monster monster){		//consider selecting a monster based on its spawn rate.
-		if(((double)((double)monster.spawnChance*100.0))>monsterRNG.nextInt(100))
-			return true;
-		return false;
+	public static Monster bestMonster(Monster[] monsterOptions, int depth) {	//most appropriate monster (out of the options) for the depth.
+		int length=monsterOptions.length;
+		if(length>1){
+			Monster bestMonster=monsterOptions[0];
+			 for(int i=1;i<length&&monsterOptions[i]!=null;i++){
+				  int currentClosest=Math.abs(bestMonster.getOverallPower()-depth);
+				  int potentialClosest=Math.abs(monsterOptions[i].getOverallPower()-depth);  
+				  if(potentialClosest<currentClosest)
+					  bestMonster=monsterOptions[i];
+			 }
+			 return bestMonster;
+		}
+		else if(length==1)
+			return monsterOptions[0];
+		return null;
+	}
+
+	private Monster randomMonster(){
+		int count=knownMonsterCount();
+		if(count==0)
+			return null;
+		int monsterIndex=monsterRNG.nextInt(count);
+		while(getMonster(monsterIndex)==null)
+			monsterIndex=monsterRNG.nextInt(count);
+		return getMonster(monsterIndex);
 	}
 	
 	public int knownMonsterCount(){

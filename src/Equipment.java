@@ -19,6 +19,12 @@ public class Equipment extends Item{
 		//equippable=true;
 	}
 	
+	@Override
+	public void initialize(Level level) {
+		// TODO: Weapon and armor should override this method.
+		
+	}
+	
 	public String toString(){
 		String retVal=name;
 		return retVal;
@@ -99,6 +105,8 @@ public class Equipment extends Item{
 	public int getOverallValue() {	//TODO: make sure this gets overridden by armor/weapon versions.
 		return 0;
 	}
+
+
 	
 	//0: head	1: chest	2: left hand (shield)	3:right hand (weapon)	4:pants		5: boots
 	//a 2-handed weapon is technically held in the right hand, but forces the left hand to be empty.

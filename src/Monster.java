@@ -59,6 +59,7 @@ public class Monster extends Entity{
 		xp=monster.xp;
 		
 		spawnChance=monster.spawnChance;
+		availableBranches=monster.availableBranches;
 		inventory=new Inventory(monster.inventory);
 	}
 	
@@ -165,7 +166,7 @@ public class Monster extends Entity{
 	}
 	
 	private void decideMove(){
-		state.decideMove();
+		AIstate.decideMove();
 	}
 
 	public void detectAdjacentMonster(){	//see if there is a monster in adjacent squares
@@ -631,10 +632,14 @@ public class Monster extends Entity{
 			changeCurrentMessage(currentMessageName()+" shrugged it off.",currentTile,false);
 		}
 		hitPoints[0]-=damage;
-		if(hitPoints[0]<=0){	//case for a monster dying
-			die(attacker.name);
-			if(attacker.getClass().equals(Player.class))	//player gains exp for monster's death
-				((Player)attacker).gainExp(calculateXpReward());
+		if(hitPoints[0]<=0){//case for a monster dying
+			if(attacker == null)
+				die("an unknown cause");
+			else{
+				die(attacker.name);
+				if(attacker.getClass().equals(Player.class))	//player gains exp for monster's death
+					((Player)attacker).gainExp(calculateXpReward());
+			}
 		}
 	}
 	
@@ -679,7 +684,7 @@ public class Monster extends Entity{
 	
 	public void die(String causeOfDeath){				//develop this more		(drop items, can no longer perform actions, object gets deleted, more specific message appears, etc.)	
 		
-		if(getClass()==Player.class){		//if the player dies, call a separate method.
+		if(getClass().equals(Player.class)){		//if the player dies, call a separate method.
 			RogueLikeGui.playerDeath.playerDies(causeOfDeath);	
 		}
 			
@@ -689,7 +694,7 @@ public class Monster extends Entity{
 			equippedItems.unequipAll();
 			dropAllItems();	//will want to make monsters drop their gold, too.
 			currentTile.addGold(inventory.takeAllGold());
-			currentTile.addItem(new Food(name+" corpse",hitPoints[1]*3));	//currently, a monster's corpse's nutritional value is based on its max HP.
+			currentTile.addItem(new Food(name+" corpse",(20+(hitPoints[1]*4))));	//currently, a monster's corpse's nutritional value is based on its max HP.
 			currentTile.clear();
 			currentLevel.removeMonster(this);
 		}	
@@ -1193,6 +1198,10 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		protected void appendToCurrentMessage(String message) {
 			RogueLikeGui.currentMessage+=" "+message;
 		}
+		
+	public int getOverallPower(){	//temporary. TODO: work out a formula with nick.
+		return maxHitPoints()+baseDamage;
+	}
 	
 	//current level methods
 		
@@ -1201,12 +1210,32 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		this.currentLevel=currentLevel;
 		fov=new FOV(this);
 	}
+	
+	public void addAvailableBranch(Branch branch){
+		int index=0;
+		while(index<availableBranches.length&&availableBranches[index]!=null)
+			index++;
+		if(index<availableBranches.length)
+			availableBranches[index]=branch;
+	}
+
+	public void setAvailableBranches(Branch[] branches){
+		availableBranches=branches;
+	}
+
+	public boolean availableInBranch(Branch branch){
+		for(int i=0;i<availableBranches.length&&availableBranches[i]!=null;i++){
+			if(branch.equals(availableBranches[i]))
+				return true;
+		}
+		return false;
+	}
 		
 	private Random dice = new Random();
 	public double spawnChance=1.0;
 
 	public FOV fov;
-	private AIState state=new AIState(AIState.IDLE,this);
+	private AIState AIstate=new AIState(AIState.IDLE,this);
 	
 	protected String name;
 	protected int[] hitPoints={0,0};	//two-int array, with first as current and second and maximum
@@ -1233,4 +1262,6 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	public int stunCountDown=0;
 	public boolean stunnedThisTurn=false;
 	public boolean stunnedLastTurn=false; //keeps track of whether this monster stunned another monster the last turn.
+
+	private Branch[] availableBranches=new Branch[Dungeon.BRANCH_COUNT];
 }

@@ -11,8 +11,9 @@ public class ItemGenerator {	//generates random items and gold for the level.
 	}
 	
 	public void addItem(Item newItem){
-		for(int i=0;i<Item.ITEM_CLASSES.length;i++){
-			if(newItem.getClass().equals(Item.ITEM_CLASSES[i])){
+		Class<?>[] classes=Item.ITEM_CLASSES;
+		for(int i=0;i<classes.length;i++){
+			if(newItem.getClass().equals(classes[i])){
 				int index=0;
 				while(index<knownItems[i].length&&knownItems[i][index]!=null)
 					index++;
@@ -40,12 +41,12 @@ public class ItemGenerator {	//generates random items and gold for the level.
 			while(knownItemCount(classIndex)<=0)
 				classIndex=itemRNG.nextInt(Item.ITEM_CLASSES.length);
 			Class<?> itemClass=Item.ITEM_CLASSES[classIndex];
-			return getRandomItem(itemClass);
+			return chooseRandomItem(itemClass);
 		}
 		return null;
 	}
 	
-	public Item getRandomItem(Class<?> itemClass) {
+	/*public Item chooseRandomItem(Class<?> itemClass) {
 		for(int i=0;i<Item.ITEM_CLASSES.length;i++){
 			if(itemClass==Item.ITEM_CLASSES[i]&&knownItemCount(i)>0){
 				boolean itemChosen=false;
@@ -60,13 +61,64 @@ public class ItemGenerator {	//generates random items and gold for the level.
 			}		
 		}
 		return null;
-	}
+	}*/
 	
-	private boolean considerItem(Item item){		//considers selecting an item based on its spawn rate.
+	public Item chooseRandomItem(Class<?> itemClass){		//chooses a random known monster appropriate for the level.
+		int knownCount=knownItemCount(itemClass);
+		int itemDepth=dungeonLevel.itemDepth(itemClass);
+		if(knownCount<1)
+			return null;
+		if(knownCount==1)
+			return getItem(itemClass,0);
+		else if(knownCount>1){
+			int optionCount=(int) Math.max(2, 
+								knownCount/(2.1+0.08*itemDepth));	//TODO: tweak this formula until it seems right.
+			Item[] itemOptions=new Item[optionCount];	//possible items to choose from
+			itemOptions[0]=randomItem(itemClass);
+			for(int i=1;i<optionCount;i++){
+				Item nextItem=randomItem(itemClass);
+				while(nextItem.genericName().equals(itemOptions[i-1].genericName()))
+					nextItem=randomItem(itemClass);
+				itemOptions[i]=nextItem;
+			}
+			return bestItem(itemOptions, itemDepth);
+		}
+		return null;
+	}
+	 
+	
+	private Item bestItem(Item[] itemOptions, int itemDepth) {
+		int length=itemOptions.length;
+		if(length>1){
+			Item bestItem=itemOptions[0];
+			 for(int i=1;i<length&&itemOptions[i]!=null;i++){
+				  int currentClosest=Math.abs(bestItem.getOverallValue()-itemDepth);
+				  int potentialClosest=Math.abs(itemOptions[i].getOverallValue()-itemDepth);  
+				  if(potentialClosest<currentClosest)
+					  bestItem=itemOptions[i];
+			 }
+			 return bestItem;
+		}
+		else if(length==1)
+			return itemOptions[0];
+		return null;
+	}
+
+	private Item randomItem(Class<?> itemClass) {
+		int count=knownItemCount(itemClass);
+		if(count==0)
+			return null;
+		int itemIndex=itemRNG.nextInt(count);
+		while(getItem(itemClass,itemIndex)==null)
+			itemIndex=itemRNG.nextInt(count);
+		return getItem(itemClass, itemIndex);
+	}
+
+	/*private boolean considerItem(Item item){		//considers selecting an item based on its spawn rate.
 		if(((double)((double)item.spawnChance*100.0))>itemRNG.nextInt(100))
 			return true;
 		return false;
-	}
+	}*/
 	
 	public int randomGoldAmount(){	//a random amount of gold appropriate for this level.
 		if(goldMin==goldMax)
@@ -95,6 +147,22 @@ public class ItemGenerator {	//generates random items and gold for the level.
 			while(index<knownItems[classIndex].length&&knownItems[classIndex][index]!=null)
 				index++;
 		return index;
+	}
+	
+	public int knownItemCount(Class<?> itemClass){
+		Class<?>[] classes=Item.ITEM_CLASSES;
+		for(int i=0;i<classes.length;i++){
+			//System.out.println(itemClass+", "+classes[i]);
+			if(itemClass.equals(classes[i])){
+				//if(itemClass.equals(Weapon.class))
+				//	System.out.println("WEAPON");
+				int index=0;
+				while(index<knownItems[i].length&&knownItems[i][index]!=null)
+					index++;
+				return index;
+			}		
+		}
+		return 0;
 	}
 	
 	public Level getDungeonLevel(){

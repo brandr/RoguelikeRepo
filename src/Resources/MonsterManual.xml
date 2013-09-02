@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <monsters>
     <monster>
-      <minimumDepth>5</minimumDepth>
-      <maximumDepth>15</maximumDepth>
       <name>Armadillo</name>
       <icon>a</icon>
       <color>8A4B08</color>
       <hitPoints>26</hitPoints>
       <baseDamage>3</baseDamage>
+      <baseArmor>2</baseArmor>
       <spawnChance>0.4</spawnChance>
       <inventory>
       </inventory>
@@ -20,6 +19,7 @@
       <color>0040FF</color>
       <hitPoints>100</hitPoints>
       <baseDamage>30</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>  
@@ -31,6 +31,7 @@
       <color>61380B</color>
       <hitPoints>28</hitPoints>
       <baseDamage>8</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -42,6 +43,7 @@
       <color>8A0808</color>
       <hitPoints>36</hitPoints>
       <baseDamage>14</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -53,6 +55,7 @@
       <color>3B240B</color>
       <hitPoints>45</hitPoints>
       <baseDamage>16</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -64,6 +67,7 @@
       <color>8A0808</color>
       <hitPoints>24</hitPoints>
       <baseDamage>12</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -75,6 +79,7 @@
       <color>38610B</color>
       <hitPoints>18</hitPoints>
       <baseDamage>4</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
           <weapon>
               <itemName>Quarterstaff</itemName>
@@ -96,6 +101,7 @@
       <color>B404AE</color>
       <hitPoints>5</hitPoints>
       <baseDamage>0</baseDamage>
+      <baseArmor>0</baseArmor>
       <spawnChance>0.0003</spawnChance>
       <inventory>
            <weapon>
@@ -113,6 +119,7 @@
       <color>424242</color>
       <hitPoints>25</hitPoints>
       <baseDamage>11</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
           <weapon>
               <itemName>Flaming broadsword</itemName>
@@ -129,6 +136,7 @@
       <color>045FB4</color>
       <hitPoints>24</hitPoints>
       <baseDamage>6</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -140,6 +148,7 @@
       <color>AEB404</color>
       <hitPoints>40</hitPoints>
       <baseDamage>7</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -151,6 +160,7 @@
       <color>A4A4A4</color>
       <hitPoints>1</hitPoints>
       <baseDamage>20</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -162,6 +172,7 @@
       <color>3B0B2E</color>
       <hitPoints>65</hitPoints>
       <baseDamage>16</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -173,6 +184,7 @@
       <color>4B8A08</color>
       <hitPoints>14</hitPoints>
       <baseDamage>3</baseDamage>
+      <baseArmor>0</baseArmor>
       <spawnChance>0.8</spawnChance>
       <inventory>
       </inventory>
@@ -185,6 +197,7 @@
       <color>8A2908</color>
       <hitPoints>45</hitPoints>
       <baseDamage>8</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -196,6 +209,7 @@
       <color>8A2908</color>
       <hitPoints>32</hitPoints>
       <baseDamage>10</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -207,6 +221,7 @@
       <color>29088A</color>
       <hitPoints>48</hitPoints>
       <baseDamage>26</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -229,6 +244,7 @@
       <color>DF01D7</color>
       <hitPoints>5</hitPoints>
       <baseDamage>50</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -240,6 +256,7 @@
       <color>5E610B</color>
       <hitPoints>30</hitPoints>
       <baseDamage>20</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -251,6 +268,7 @@
       <color>5F4C0B</color>
       <hitPoints>12</hitPoints>
       <baseDamage>3</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
           <potion></potion>
           <armor></armor>
@@ -265,6 +283,7 @@
       <color>3B240B</color>
       <hitPoints>16</hitPoints>
       <baseDamage>5</baseDamage>
+      <baseArmor>0</baseArmor>
       <spawnChance>0.3</spawnChance>
       <inventory>
           <potion></potion>
@@ -280,6 +299,7 @@
       <color>8904B1</color>
       <hitPoints>26</hitPoints>
       <baseDamage>7</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -291,6 +311,7 @@
       <color>DF3A01</color>
       <hitPoints>30</hitPoints>
       <baseDamage>18</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -302,6 +323,7 @@
       <color>DF7401</color>
       <hitPoints>16</hitPoints>
       <baseDamage>6</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
           <weapon>
               <itemName>Rothe spear</itemName>
@@ -318,6 +340,7 @@
       <color>585858</color>
       <hitPoints>14</hitPoints>
       <baseDamage>4</baseDamage>
+      <baseArmor>0</baseArmor>
       <spawnChance>0.8</spawnChance>
       <inventory>
           <potion></potion>
@@ -333,6 +356,7 @@
       <color>B40431</color>
       <hitPoints>36</hitPoints>
       <baseDamage>12</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -344,6 +368,7 @@
       <color>088A08</color>
       <hitPoints>30</hitPoints>
       <baseDamage>5</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -355,6 +380,7 @@
       <color>088A29</color>
       <hitPoints>32</hitPoints>
       <baseDamage>9</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -366,6 +392,7 @@
       <color>8904B1</color>
       <hitPoints>25</hitPoints>
       <baseDamage>7</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -377,6 +404,7 @@
       <color>8A0829</color>
       <hitPoints>25</hitPoints>
       <baseDamage>11</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -388,6 +416,7 @@
       <color>0B3861</color>
       <hitPoints>40</hitPoints>
       <baseDamage>5</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>
@@ -400,6 +429,7 @@
       <color>B40404</color>
       <hitPoints>16</hitPoints>
       <baseDamage>4</baseDamage>
+      <baseArmor>0</baseArmor>
       <inventory>
       </inventory>
     </monster>

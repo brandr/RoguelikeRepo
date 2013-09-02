@@ -2,7 +2,8 @@ import java.util.Random;
 
 
 public class Ammo extends Item{
-
+	
+	public static final Material[] AMMO_EXCLUDED_MATERIALS={Material.getMaterial("cloth")};
 	//Don't make ammo with more than 5 power
 	public static final int AMMO_STACK_SIZE=99;
 	public static final char VERTICAL_AMMO_ICON='|';
@@ -28,6 +29,7 @@ public class Ammo extends Item{
 		setIcon(HORIZONTAL_AMMO_ICON);
 		setDamage(damage[0],damage[1]);	//non-proper damage set to 0 for now, since I have haven't implemented "throwable" ammo like darts.
 		setWeight(weight);
+		setExcludedMaterials(AMMO_EXCLUDED_MATERIALS);
 	}
 	
 	//copy constructors
@@ -38,6 +40,7 @@ public class Ammo extends Item{
 		properWeapons=copyAmmo.properWeapons;
 		ammoStat=copyAmmo.ammoStat;
 		identified=copyAmmo.identified;
+		setAvailableBranches(copyAmmo.getAvailableBranches());
 		
 		setStackSize(copyAmmo.getStackSize());
 		setAmount(copyAmmo.getAmount());
@@ -47,6 +50,7 @@ public class Ammo extends Item{
 		baseDamage=copyAmmo.baseDamage;
 		properlyFiredDamage=copyAmmo.properlyFiredDamage;
 		setMaterial(copyAmmo.getMaterial());
+		setExcludedMaterials(copyAmmo.getExcludedMaterials());
 	}
 	
 	//constructor for ammo in midair
@@ -87,6 +91,25 @@ public class Ammo extends Item{
 			return null;
 	}
 	
+	@Override
+	public void initialize(Level level) {	//upon ammo's placement in a level, it chooses a material and amount.
+		Branch branch=level.getBranch();
+		int ammoDepth=level.ammoDepth();
+		
+		Material[] materials=Material.suitableMaterials(this, branch, ammoDepth);	//the smaller this array is, the less variable materials will be.
+		if(materials==null)
+			return;
+		int materialIndex=dice.nextInt(materials.length);
+		while(materials[materialIndex]==null)
+			materialIndex=dice.nextInt(materials.length);
+		setMaterial(materials[materialIndex],true);
+		setAmount(createdAmmoAmount(ammoDepth));	
+	}
+	
+	private int createdAmmoAmount(int ammoDepth) {
+		return Math.min(99,10+dice.nextInt(ammoDepth/2+15));
+	}
+
 	@Override
 	public String descriptiveName(int perception){	//TODO: make more descriptive as ammo gets more attributes.
 		return "+0 "+getMaterial()+" "+name;
@@ -309,5 +332,4 @@ public class Ammo extends Item{
 	private int properlyFiredDamage=0;		//damage if fired using a weapon
 	
 	private Material material;	//TODO: make stuff that interacts with this
-	
 }
