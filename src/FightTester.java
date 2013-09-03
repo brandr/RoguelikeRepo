@@ -275,6 +275,8 @@ Give spells colors and possibly other visual effects. (consult Nick)
 With Nick, conduct an overall waterfall-style plan for the rest of the game's functionality. (make diagrams and ideally figure
 	out every class that will be necessary for the rest of the game's development.)
 
+Nick: What's a waterfall-style plan? Sounds fun. I'm down for this fairly soon.
+
 Make special teleporters that send you to a specific other teleporter on the same (or another) level. (add a unique level like this.)
 BEN'S IDEA: cloud room
 IDEA: add music to the game. (compose it myself)
@@ -284,8 +286,30 @@ consider adding messages describing "sounds" (like in nethack) from monsters doi
 TODO category: things to ask nick about
 
 Go over weapons code with Nick and see if "piercing" should still do anything
+
+Nick: Piercing should no longer do anything, I think we might have kind of moved past it. It's not terribly fun as far as
+I can see. I'm down for maybe making it a damage tag on certain artifact weapons, but other than that I have no idea.
+
 should luck be invisible? how to implement it?
+
+Nick: The stat should be visible to the player, but the game use of the stat should remain invisible. Luck is
+difficult. The way that I want to do it is really hard to implement in a way that's both decently-easy codewise and
+has a reasonably strong, subtle affect on gameplay. I was thinking of having it alter level, item, and monster generation
+in way that are beneficial to the player, although the issue is that if you leave weak monsters and powerful artifacts
+around, monsters are going to pick them up and poop on you. There are probably going to be other random events that 
+will make luck a more valuable stat later on. When do the first altars show up? Is that monster hostile? What is the shop
+selling today? Does that immolation scroll kill me or just wound me?
+
+
 cursed/blessed items?
+
+Nick: Blessed items aren't my cup of tea. Cursed items, I'm more ok with because it prevents the equip-everything fuckery that
+can characterize a game without a penalty for willy-nilly equipping. I like the cursed item thing because, contrary to
+popular belief, it makes the game fairer. If you equip everything until you get a decent x or y to finish the game with, 
+the only thing that alters how well you do itemwise is what spawns. If there's a curselike mechanic that makes you exercise
+a bit more discretion, however, we can sprinkle the game with stronger items and let the player know that his discretion or 
+lack thereof is really damn important.
+
 Map editor
 	*How to handle stairs?
 		*could agree to only put unique levels only in places without stairs branching off or at the end of branches
@@ -299,46 +323,109 @@ Map editor
 					*if	the existing level runs out of stairs first, (i.e., the read-in upstairs have toBranches that we don't want),
 						*replace the unwanted stairs with empty tiles.
 				*repeat process for downstairs.
-	*How to handle monsters? Unique monsters?
+				
+				Nick: Your guess is really as good as mine, dude. As long as stairs reliable transport everywhere, they will 
+				continue to be ok by me. But aside from that I have no clue how to handle them best.
+				
+				
+*How to handle monsters? Unique monsters?
+
+Nick: Aside from the monster overhaul discussed earlier, unique monsters should have unique combinations of items, behaviors,
+and abilities. A great example is (I'm going to dickride crawl some more, hang tight) Nergalle from crawl. Nergalle is a 
+powerful orcish necromancer. To communicate the concept, Nergalle summons the ghosts of fallen orc warriors (spawns what
+is effectively a renamed wraith), and blasts you with bolts of negative energy. Since she has that life-and-death shamanic 
+thing going, she can also cast Death's Door, a spell that makes you temporarily invincible at great cost (max health
+and a bunch of current mana). And aside from having a cool theme and easy-to-implement things that make up this theme, she
+also presents a pretty difficult gameplay challenge too, as she can surround you with her negative-energy-immune wraiths,
+blast you through them while you can't move, and buy herself time to kill you if she gets low.
+
 Should potions be limited in scope (i.e., not read in depth and only randomize values on effect generation), or keep working with current formulas?)
 	*example: the first case would mean "potions of healing" and separate "potions of extra healing", since each one would have only a limited range.
 	*the advantages of the first choice: a) a known potion's effect would be more predictable to the player. b) more powerful/rarer potions would stand out more.
+
+Nick: Potions oughta be limited in scope. They're either an early-game thing (drinking potions of healing/extra healing to get yourself out
+of various binds), or generally beneficial things that are also pretty damn rare. (potions of xp gain/stat gain) They should have widely-varying
+effects, and should occasionally be useful at most points in the game, but the majority of potions should go early, and they should DEFINITELY
+not scale. 
+
 Trap types
-identification/inspection system
-Luck details? (may need to change item generation a little/add more items to dungeon)
+
+Nick: Traps I could take or leave. Maybe in themed levels to communicate the theme better. (underground fortresses and things of that ilk). 
+If there are going to be traps, they better spawn by branch and only semirandomly.
+
+Identification/inspection system:
+
+Nick: Material and item type are immediately obvious. Quality is obvious to within 3 levels. Enchantment and weapon power are obvious if it
+is very strong. A theoretical highly-enchanted artifact weapon should be "a runed, finely-crafted X" or "a faintly-glowing, masterwork Y". 
+
 Food? Hunger?
+
+Nick: I am still way too butthurt about this to say anything of substance. Can we just learn to use git instead?
+
 Races? Classes?
+
+Nick: Lots of both. Races are going to mostly be things that determine what happens early, granting various advantages and attributes (rough
+skin for +AC, a few levels in various skills), while classes will determine the long-term destiny of your character with preferred skills, 
+differences in stat gain, and of course SMOKE SKILL TREES EVERY DAY.
+
 other items besides potions: 
 	*Scrolls?
 	*Spellbooks?
 	*Tools? (may require extensive planning compared to other types, since more general)
+
+Nick: Yes, yes, no. 
+
 Locked doors? chests? bags?
-stat gains on level-up?
+
+Nick: Eh. Doors yes, the rest not really. I still remember those nethack days of #BREAK #LOOT #TAKE or whatever the fuck you had to do to
+use one of the damn things. Locked doors grant a cool piece of anxiety though, esp if there is something scary behind you.
+
+Stat gains on level-up?
+
+Nick: Yeah, probably 5 points every 2 levels.
+
 Spells? Elements?
+
+Nick: Elements, I have no idea about. We'll probably go for the standard fire, ice, earth, air and one or two grab-bag types like death, 
+poison, or time. In any case, there are five schools, each with a type of spell. Translocations are spells that move something somewhere.
+Evocations are spells that just evoke raw energy output. They blast people. It hurts. Transmutations are spells that change one thing to 
+another. Enchantments are spells that imbue something with magical energy to create a specific effect. Abjurations protect, block, or banish.
+Most spells are either just a school, or an element and a school. A raw evocation spell would just produce your garden-variety magic missile
+or mystic blast at a high level. Ice/Evocation would fire a ball or cone of cold. Earth/Transmutation would make your skin hard and stony, 
+or create rocky walls so enemies couldn't get to you. Air/Abjuration would create a peculiar type of wind pattern around you that seems 
+to push arrows away just before they hit. So on and so forth. 
+
 Start Screen?
+
+Nick: Eh, probably later. Maybe once we invent savegames?
+
 New level generation types?
+
+Nick: No real idea. Caverns, ruins, tunnels, underground groves of mushroomesque trees. Sky's the limit, really. Whatever floats your java 
+boat.
+
 Gold?
 	*how many stacks? (currently based on empty tiles in level)
 	*how much on level 1? level 50? progression?
 	*where is gold used? how much is max gold?
 	*can gold be dropped?
-Monsters:
-	*AI patterns?
-	*unique monsters?
-	*some randomization of loot? (A and B "equipment layouts" that alternately occur on the same monster, rare loot, general loot that drops
-		*from a preset pool of "monster loot", (based on monster level and category) etc.
-	*monster categories
-	*hostilities (monsters are not hostile if the player is the same race as them? etc.)
-	*pets?
-	*monster special abilities? (should compartmentalize as much as possible, or else put strong/difficult-to-code abilities on unique monsters)
+
+Nick: We should probably hold off on gold for a while because spending it requires a monster that doesn't try to kill you on sight.
+
+	//* deleted monster overhaul notes -- duplicate.
+
 Work out instruction manual with Nick (he may want to write the final version and add some more flavor)
+
+Nick: It can wait until the game is nearly done. As can most of the flavor really. 
 
 TODO category: unsorted tasks
 
-IDEA: maybe make a "dice" class with 'xdy' methods and range methods for easier randomization.
-add object/tile hallucination
+IDEA: maybe make a "dice" class with 'xdy' methods and range methods for easier randomization. (COMPLETED BY NICK, 2/9)
+
+IDEA: add object/tile hallucination
 			 
 IDEA: from main screen, player can press 'esc' key to exit or restart game
+
 TODO: figure out how the GUI handles differently-sized rooms. (Resize window or have the screen center on the player if the entire room isn't visible.)
 make sure all rooms are *always* properly connected when a level is created.
 decide if it should be possible to drop gold (may be useful if gold is given a weight)
@@ -355,27 +442,54 @@ TODO: when the currentMessage gets too long, truncate it with "..." after the la
 TODO: decide what '5' should do in different directional situations. (moving, throwing potion, throwing arrow, etc.)
 TODO: add gold to inventory screen (in addition to playerInfo screen)
 TODO: make a nicer-looking GUI. (consider using netbeans, or just researching more layout commands.)
-
-	TODO category: Expanding Scope
+TODO category: Expanding Scope
 TODO: finish implementing hunger. add "hungry" to display somewhere as necessary. Also decide how eating works when fullness is not
 	completely full, but almost. (consider not having a solid cap, but an area where death from choking becomes increasingly likely, as in
-	  Nethack. Also, consider consequences for low hunger. Figure out how to divide hunger states.)
-	 
+	  Nethack. Also, consider consequences for low hunger. Figure out how to divide hunger states.)	 
 TODO: make it so the most recent item added to a stack is visible on top. (note: is this already the case?)
 TODO: expand and organize monster AI. (experiment with neutral monsters and friendly monsters that follow the player.)
+
 TODO: consider implementing a save feature. (consult Nick)
+
+Nick: Please do.
+
 TODO: fully implement all types of spells. (consult Nick)
+
+Nick: I have enough literature for you to start now if you want.
+
 TODO: fully implement the level-up system. (stat boosts? varying HP boosts? different boosts for different classes/races?) Agree on details with Nick.
+
+Nick: For sure. I have a lot of it done but the monster overhaul probably needs to happen first just to produce difficulty worth levelling 
+up for.
 
 TODO: implement NPC interaction. (will have to change player move->attack transition to check if the monster is hostile.)
 	//*talking
 	//*buying stuff
 	//*deciding to attack (consider making a MonsterList class to replace current hostile monsters array
+
 //TODO: if useful, implement monster categories. (human, orc, etc.)
 consider different attack messages for different weapons/monsters/etc. (randomization?)
 
 //TODO category game design: (as opposed to coding)
-(put ideas here)
+Nick {
+MOST IMPORTANT TODO: Work with Robert to come up with a 'master' order to do things in. What makes sense to do first? No sense in 
+stacking up a bunch of skill trees if I haven't given any thought to the mechanics the skill trees are modifying.
+
+SECOND MOST IMPORTANT TODO: Work with Robert to come up with a solid, repeatable way to describe new game features in the way most
+conducive to easy implementation. What do we have to know to make our ideas work?? How do we find it out?
+
+TODO: Consider ~12 fully-planned starting classes, ~5 fully-planned starting races (arbitrary limits make creativity).
+TODO: Consider monster behavior and inventory relating to player experience.
+TODO: Work out guidelines for magic mechanics. Speak with Robert about that badass add-anything system, what it means, and contribute your 
+meager ideas on how to make that work. You casual.
+TODO: Learn more Java. Write more codes.
+TODO: Figure out some basic guidelines for artifacts.
+TODO: Figure out a concrete way to use every single stat you asked for. If it's not immediately fun, get the fuck rid of it, the player only 
+has thirty points.
+TODO: Invent guidelines for game balance. What should everything feel like when, and how?
+TODO: Lay foundations for gameplot. What has to be obtained? To do what? What does the macguffin looks like? Where do you have to go?
+What's between there and here? Why? Why are you going there in the first place? 
+}
 */
 import java.awt.Dimension;
 import java.io.FileNotFoundException;
