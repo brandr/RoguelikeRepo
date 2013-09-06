@@ -56,7 +56,11 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	static final String POWER="power";
 	static final String ARMOR_TYPE="armorType";
 	
+<<<<<<< HEAD
 	public static Monster[] allDungeonMonsters(Dungeon dungeon){		//add monsters to the appropriate level in the dungeon
+=======
+	public static void addDungeonMonsters(Dungeon dungeon){		//add monsters to the appropriate level in the dungeon
+>>>>>>> 9bac6d322d3b94fef04d35c79c8a94aecf596bf5
 		try { 
 			
 			//write();
@@ -144,6 +148,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 												if(xp==-1)
 													xp=baseDamage;
 	        			
+<<<<<<< HEAD
 												addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!
 												addedMonster.color=color;
 												addedMonster.xp=xp;
@@ -178,6 +183,36 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        						}
 	        					}
 	        				}
+=======
+	        			Monster addedMonster=new Monster();
+        				//TODO: set all defaults here
+        				if(hitPoints==-1)
+        					hitPoints=getDefaultHitPoints(minDepth,maxDepth);
+        				if(baseDamage==-1)
+        					baseDamage=getDefaultBaseDamage(minDepth,maxDepth);
+        				if(baseArmor==-1)
+        					baseArmor=getDefaultBaseArmor(minDepth,maxDepth);
+        		    	if(toHit==-1)
+        		    		toHit=getDefaultToHit(minDepth,maxDepth);
+        		    	if(evasionValue==-1)
+        		    		evasionValue=getDefaultEvasionValue(minDepth,maxDepth);
+        		    	if(xp==-1)
+        		    		xp=getDefaultXp(minDepth,maxDepth);
+        		    	
+        		    	
+        		    	
+        		    	addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!
+        				addedMonster.color=color;
+        								
+        		    	addedMonster.xp=xp;
+        		    	addedMonster.spawnChance=spawnChance;
+
+	        			for(int i=minDepth;i<=maxDepth;i++){	
+	        				addedMonster.inventory=new Inventory(inventory);
+	        				dungeon.addAvailableMonster(addedMonster, dungeon.getBranch(branch), i);
+	        			//	if(branch==2)
+	        			//		System.out.println(addedMonster);
+>>>>>>> 9bac6d322d3b94fef04d35c79c8a94aecf596bf5
 	        			}
 	        		}
 	        	}

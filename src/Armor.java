@@ -1,6 +1,5 @@
 import java.util.Random;
 
-
 public class Armor extends Equipment{
 
 	public static final char STANDARD_ARMOR_ICON='[';
