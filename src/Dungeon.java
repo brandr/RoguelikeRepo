@@ -48,10 +48,9 @@ public class Dungeon {
    
    //addDungeonMaterials();
    addDungeonItems();
-   MonsterReader.addDungeonMonsters(this);
-   	
+   addDungeonMonsters(); 	
    }
-   
+
 public String getDungeonMap(){
 	   String map = "";
 	   for (int i = 0; i < depth-1&&getDungeonMap(i)!=null; i++) {
@@ -144,20 +143,26 @@ public String getDungeonMap(){
 		return levelBranch.getLevel(currentLevel.floor-1);
 	}
    
-   public void addAvailableMonster(Monster monster, Branch branch, int levelIndex){
+  /* public void addAvailableMonster(Monster monster, Branch branch, int levelIndex){
 	   branch.addAvailableMonster(monster, levelIndex);
-   }
+   }*/
    
   /* private void addDungeonMaterials() {
 		dungeonMaterials=MaterialReader.allMaterials();
 	}*/
    
-   private void addDungeonItems() {
+   private void addDungeonItems() {	
 	   Weapon[][] genericWeapons=WeaponReader.dungeonWeapons(this);
 	   Armor[][] genericArmors=ArmorReader.dungeonArmors(this);
 	   WeaponReader.addDungeonWeapons(this,genericWeapons);
 	   ArmorReader.addDungeonArmors(this,genericArmors);
+	   
 	   ItemReader.addDungeonItems(this);	//TODO: break this up into separate methods for each item.
+	}
+   
+   private void addDungeonMonsters() {
+	   Monster[] genericMonsters=MonsterReader.allDungeonMonsters(this);
+	   MonsterReader.addDungeonMonsters(this, genericMonsters);
 	}
    
    public void addAvailableItem(Item item, Branch branch, int levelIndex) {

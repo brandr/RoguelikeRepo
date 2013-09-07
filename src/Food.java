@@ -14,12 +14,18 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 		genericName=toCopy.genericName;
 		setWeight(toCopy.getSingleWeight());
 		identified=toCopy.identified;
+		setAvailableBranches(toCopy.getAvailableBranches());
 		setStackSize(toCopy.getStackSize());
 		setAmount(toCopy.getAmount());
 		
 		effect=new Effect(toCopy.effect);
 		hungerPoints=toCopy.hungerPoints;
 		setIcon(toCopy.getIcon());
+	}
+	
+	@Override
+	public void initialize(Level level) {
+		setAmount(1+dice.nextInt(getStackSize()));
 	}
 	
 	private void setEffect() {

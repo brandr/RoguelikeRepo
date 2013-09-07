@@ -59,7 +59,7 @@ public class Level {
 		setBranch(branch);
 		this.floor=floor;
 		layout = new Tile[xSize][ySize];
-		LevelGenerator generator=new LevelGenerator(this,type);		//TODO: I believe this constructor may be causing the stair problems for level 0.
+		LevelGenerator generator=new LevelGenerator(this,type);	
 	}
 	
 	public void overwrite(Level newLevel){
@@ -375,8 +375,7 @@ public class Level {
 		player.visitLevel(this);
 		
 		//player.fov.enterPlayerView();
-		placeItems();	//TODO: consider taking the player's Luck stat as an arg here, to influence how "good" items are. (need a way to measure "good", or just make more items)
-		
+		placeItems();	//TODO: consider taking the player's Luck stat as an arg here, to influence how "good" the items are. (need a way to measure "good", or just make more items)
 	}
 	
 	public void addMonster(Monster newMonster){	
@@ -432,13 +431,13 @@ public class Level {
 		newMonster.inventory=new Inventory(newMonster.inventory);	//only perform this for non-player monsters, since their inventory items should be copied, not referenced.
 		if(levelContainsPlayer())
 			newMonster.addEnemy(levelPlayer());	
-		}
-			
-		
+		}	
 	}
 	
-	public void addAvailableMonster(Monster monster){
-		if(monster!=null)
+	public void addAvailableMonster(Monster monster, int spawnOffset){	//TODO: change this method appropriately once monster gradient spawing is set up.
+		//if(spawnOffset!=0)
+		//	monster.spawnChance*=offsetAdjustment(spawnOffset);
+		if(monster!=null&&monsterGenerator!=null)
 			monsterGenerator.addMonster(monster);
 	}
 	
@@ -452,7 +451,7 @@ public class Level {
 		if(monsterGenerator!=null&&monsterGenerator.knownMonsterCount()>0){
 			int initialMonsterCount = Math.max(1,mininumMonsters+rng.nextInt(maximumMonsters-mininumMonsters+1));
 			for(int i=0;i<initialMonsterCount;i++){
-				addInitialMonster(monsterGenerator.getRandomMonster());
+				addInitialMonster(monsterGenerator.chooseRandomMonster());
 			}
 		}
 	}
@@ -477,7 +476,7 @@ public class Level {
 	
 	public Player levelPlayer(){
 		for(int i=0;i<levelMonsters.length&&levelMonsters[i]!=null;i++){
-			if(levelMonsters[i].getClass()==Player.class)
+			if(levelMonsters[i].getClass().equals(Player.class))
 				return (Player)levelMonsters[i];
 		}
 			return null;
@@ -485,7 +484,7 @@ public class Level {
 	
 	public boolean levelContainsPlayer(){
 		for(int i=0;i<levelMonsters.length&&levelMonsters[i]!=null;i++){
-			if(levelMonsters[i].getClass()==Player.class)
+			if(levelMonsters[i].getClass().equals(Player.class))
 				return true;
 		}
 			return false;
@@ -538,9 +537,7 @@ public class Level {
 	
 	private void placeItems(Class<?> itemClass,int maximumItems){
 		int forceItemChance=1;	//chance (out of 10) of forcing a maximumItems of at least 1. (an item of that type is still not guaranteed, though.)
-		
-		if(itemGenerator.knownItemCount()>0){
-			
+		if(itemGenerator.knownItemCount(itemClass)>0){
 			//minimum is always 0. may change this if necessary.
 			if(itemClass.equals(Ammo.class)){
 				maximumItems/=5;
@@ -562,8 +559,10 @@ public class Level {
 				maximumItems=Math.max(maximumItems, 1);
 			if(maximumItems==0)	return;	//if maximumItems is still 0, we don't need to add that type of item.		
 			int itemCount=rng.nextInt(maximumItems+1);
-			for(int i=0;i<itemCount;i++){
-				addItemRandom(itemGenerator.getRandomItem(itemClass));
+			for(int i=0;i<itemCount;i++){	//NOTE: if artifacts or rare items can spawn, this may grow more complicated
+				Item addedItem=itemGenerator.chooseRandomItem(itemClass);
+				addedItem.initialize(this); //set some starting traits of the item, like stack size and material.
+				addItemRandom(addedItem);
 			}
 		}
 	}
@@ -919,6 +918,16 @@ public class Level {
 	}
 
 	//depth getters for spawning
+	
+	public int itemDepth(Class<?> itemClass){
+		switch(itemClass.getCanonicalName()){
+		case("Ammo"): return ammoDepth();
+		case("Armor"): return armorDepth();
+		case("Weapon"): return weaponDepth();
+		default:
+			return floor;
+		}
+	}
 	
 	public int monsterDepth(){
 		return floor+levelBranch.monsterModifier();

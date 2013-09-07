@@ -1,6 +1,5 @@
 import java.util.Random;
 
-
 public class Player extends Monster{
 
 	public static final char PLAYER_ICON='@';
@@ -79,8 +78,8 @@ public class Player extends Monster{
 	public void endPlayerTurn(){
 		
 		if(gameStarted){
-			//fov.devRefreshFOV();	//for testing only. Useful for testing monster AI.
-			fov.refreshFOV();
+			fov.devRefreshFOV();	//for testing only. Useful for testing monster AI.
+			//fov.refreshFOV();
 		
 		if(stunCountDown>0)		//cannot stun repeatedly with STR-based stuns.
 			stunCountDown--;
@@ -128,7 +127,6 @@ public class Player extends Monster{
 			Tile tile=currentLevel.getTile(xPos, yPos);
 			
 			if(currentLevel.isPassable(xPos,yPos)){		//idea: some of the code in this if statement might belong better inside of the "setposition" method
-				//fov.exitPlayerView();
 				currentTile.clear();
 				setPosition(xPos, yPos);
 				currentTile.monster=this;

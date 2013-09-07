@@ -28,6 +28,7 @@ public class Armor extends Equipment{
 		genericName=toCopy.genericName;
 		armorType=toCopy.armorType;
 		identified=toCopy.identified;
+		setAvailableBranches(toCopy.getAvailableBranches());
 		setIcon(toCopy.getIcon());
 		setWeight(toCopy.getWeight());
 		
@@ -35,6 +36,21 @@ public class Armor extends Equipment{
 		armorQuality=toCopy.armorQuality;
 		
 		material=toCopy.getMaterial();
+		setExcludedMaterials(toCopy.getExcludedMaterials());
+	}
+	
+	@Override
+	public void initialize(Level level) {
+		Branch branch=level.getBranch();
+		int armorDepth=level.armorDepth();
+		
+		Material[] materials=Material.suitableMaterials(this, branch, armorDepth);	//the smaller this array is, the less variable materials will be.
+		if(materials==null)
+			return;
+		int materialIndex=dice.nextInt(materials.length);
+		while(materials[materialIndex]==null)
+			materialIndex=dice.nextInt(materials.length);
+		setMaterial(materials[materialIndex],true);
 	}
 	
 	public void setArmorType(String armorType) {	//determines the armor index based on a string instead. May need to become more general if more armor slots are added.

@@ -44,6 +44,7 @@ public static Weapon[][] dungeonWeapons(Dungeon dungeon){		//add monsters to the
 	    	int quality=-1;
 	    	double variance=-1;	
 			double weight =-1;
+			Material[] excludedMaterials=new Material[100];
 			
 			int stackSize=1;
 	    	
@@ -62,7 +63,7 @@ public static Weapon[][] dungeonWeapons(Dungeon dungeon){		//add monsters to the
 	        					if(isWeaponCategory(startElementName(event)))
 	        						weaponCategory=startElementName(event);
 	        					
-	        					else if(startElementName(event)==FAMILY){
+	        					else if(startElementName(event).equals(FAMILY)){
 	        						
 	        						Branch[] branches=null;
 	        						if(dungeon!=null)
@@ -86,6 +87,12 @@ public static Weapon[][] dungeonWeapons(Dungeon dungeon){		//add monsters to the
 	        									hands=Integer.parseInt(reader.nextEvent().toString());break;
 	        								case(WEIGHT):
 	        									weight=Double.parseDouble(reader.nextEvent().toString());break;
+	        								case(EXCLUDED_MATERIAL):
+	        									int materialIndex=0;
+	        									while(materialIndex<excludedMaterials.length&&excludedMaterials[materialIndex]!=null)
+	        										materialIndex++;
+	        									excludedMaterials[materialIndex]=Material.getMaterial(reader.nextEvent().toString());
+	        									break;
 	        								case(BRANCH):
 	        									int index=0;
 	        									while(branches!=null&&index<branches.length&&branches[index]!=null)
@@ -114,7 +121,10 @@ public static Weapon[][] dungeonWeapons(Dungeon dungeon){		//add monsters to the
             		        					stackSize=1; //necessary here or not? test with it removed
             		        					
             		        					addedWeapon.setIcon(Weapon.STANDARDWEAPONICON);
-            		        					if(branches!=null&&branches[0]==null&&dungeon!=null)
+            		        					addedWeapon.setExcludedMaterials(excludedMaterials);
+            		        					if(branches!=null
+            		        					 &&branches[0]==null
+            		        					 &&dungeon!=null)	//TODO: why is the second check the way it is? Try changing it to != and test weapon spawning.
             		        						branches=dungeon.allBranches();
             		        					addedWeapon.setAvailableBranches(branches);
             		        					weapons[categoryIndex][familyIndex]=addedWeapon;
@@ -278,20 +288,23 @@ public static void addDungeonWeapons(Dungeon dungeon, Weapon[][] weapons) {
 }
 
 private static void addBranchWeapons(Dungeon dungeon, Branch branch, Weapon[][] weapons) {
+	
 	for(int i=branch.startDepth();i<branch.endDepth();i++){
-		
 		Level currentLevel=branch.getLevel(i);
 		int weaponDepth=currentLevel.weaponDepth();
-		for(int j=0;i<weapons.length&&weapons[j][0]!=null;j++){
-			for(int k=0;k<weapons.length&&weapons[j][k]!=null;k++){
+		for(int j=0;j<weapons.length&&weapons[j][0]!=null;j++){	//changed an 'i' to 'j'. make sure it's right.
+			for(int k=0;k<weapons[j].length&&weapons[j][k]!=null;k++){
 				int value=weapons[j][k].getOverallValue();
-				Material[] materials=Material.suitableMaterials(branch, weaponDepth);
-				for(int m=0;m<materials.length&&materials[m]!=null;m++){
+	//			Material[] materials=Material.suitableMaterials(branch, weaponDepth);	//TODO: set weapon material/amount only on its placement in a level.
+				//for(int m=0;m<materials.length&&materials[m]!=null;m++){
 					Weapon addedWeapon=new Weapon(weapons[j][k]);
-					addedWeapon.setMaterial(new Material(materials[m]),true);
-					if(addedWeapon.stackable())
-						addedWeapon.setAmount(addedWeapon.randomAmount());
-					currentLevel.addAvailableItem(addedWeapon, Math.abs(value-weaponDepth));
+					if(addedWeapon.availableInBranch(branch)){
+				//		addedWeapon.setMaterial(new Material(materials[m]),true);
+				//		if(addedWeapon.stackable())
+				//			addedWeapon.setAmount(addedWeapon.randomAmount());
+						currentLevel.addAvailableItem(addedWeapon, Math.abs(value-weaponDepth));
+						
+				//	}
 				}	
 			}	
 		}

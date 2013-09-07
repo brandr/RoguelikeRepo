@@ -129,18 +129,19 @@ public class Material {
 	
 	  //special getter methods (think of better name for method group)
 	  
-	  public static Material[] suitableMaterials(Branch branch, int depth){
-		  Material[] availableMaterials=branch.availableMaterials;
+	  public static Material[] suitableMaterials(Item item, Branch branch, int depth){
+		  
+		  Material[] excludedMaterials=item.getExcludedMaterials();
+		  Material[] availableMaterials=filteredMaterials(branch.availableMaterials,excludedMaterials);
 		  
 		  if(availableMaterials[0]==null)	//some branches don't have materials because they don't have items, I guess.
 			  return null;
-		  
 		  Material[] materials=new Material[availableMaterials.length];
 		  materials[0]=bestMaterial(availableMaterials,depth);
 		  int closest=Math.abs(materials[0].getOverallValue()-depth);
 		  int index=1;
-		  for(int i=1;i<materials.length&&materials[i]!=null;i++){
-			  int offset=Math.abs(materials[i].getOverallValue()-depth);
+		  for(int i=1;i<materials.length&&availableMaterials[i]!=null;i++){
+			  int offset=Math.abs(availableMaterials[i].getOverallValue()-depth);
 			  if(offset<closest+10){		//this check is subject to change.
 				  materials[index]=availableMaterials[i];
 				  index++;
@@ -149,7 +150,25 @@ public class Material {
 		  return materials;
 	  }
 	  
-	  public static Material bestMaterial(Material[] materials, int depth){	//the best material of these for the depth
+	private static Material[] filteredMaterials(Material[] availableMaterials,Material[] excludedMaterials) {	//filters the excluded materials from the available ones
+		Material[] filteredMaterials=new Material[availableMaterials.length];
+		int index=0;
+		for(int i=0;i<availableMaterials.length&&availableMaterials[i]!=null;i++){
+			boolean allowed=true;
+			Material nextMaterial=availableMaterials[i];
+			for(int j=0;j<excludedMaterials.length&&excludedMaterials[j]!=null;j++){
+				if(excludedMaterials[j].name.equals(nextMaterial.name))
+					allowed=false;
+			}
+			if(allowed){
+				filteredMaterials[index]=nextMaterial;
+				index++;
+			}
+		}
+		return filteredMaterials;
+	}
+
+	public static Material bestMaterial(Material[] materials, int depth){	//the best material of these for the depth
 		  if(materials[0]==null)
 			  return null;
 		  Material bestMaterial=materials[0];

@@ -32,8 +32,9 @@ public class ArmorReader extends ItemReader{
 	    	
 	    	int armorValue=-1;
 	    	int armorQuality=-1;
-			int weight =-1;
-	    	
+			double weight =-1;
+	    	Material[] excludedMaterials=new Material[100];
+			
 			while(reader.hasNext()) {
 				XMLEvent event = reader.nextEvent();
 
@@ -63,13 +64,18 @@ public class ArmorReader extends ItemReader{
 	        									armorQuality=Integer.parseInt(reader.nextEvent().toString());break;
 	        								case(WEIGHT):
 	        									weight=Integer.parseInt(reader.nextEvent().toString());break;
+	        								case(EXCLUDED_MATERIAL):
+	        									int materialIndex=0;
+	        									while(materialIndex<excludedMaterials.length&&excludedMaterials[materialIndex]!=null)
+	        										materialIndex++;
+	        									excludedMaterials[materialIndex]=Material.getMaterial(reader.nextEvent().toString());
+	        									break;
 	        								case(BRANCH):
-	        									int index=0;
-	        									while(branches!=null&&index<branches.length&&branches[index]!=null)
-	        										index++;
-	        									//need error handling for improper branch indeces
+	        									int branchIndex=0;
+	        									while(branches!=null&&branchIndex<branches.length&&branches[branchIndex]!=null)
+	        										branchIndex++;
 	        									if(dungeon!=null)
-	        										branches[index]=dungeon.getBranch(Integer.parseInt(reader.nextEvent().toString()));
+	        										branches[branchIndex]=dungeon.getBranch(Integer.parseInt(reader.nextEvent().toString()));
 	        									break;
 	        								}
 	        							}
@@ -80,7 +86,10 @@ public class ArmorReader extends ItemReader{
 	        									Armor addedArmor=new Armor(genericName, slot, armorValue, armorQuality);
 	        									addedArmor.setWeight(weight);
 	        									addedArmor.setIcon(Armor.STANDARD_ARMOR_ICON);
-            		        					if(branches!=null&&branches[0]==null&&dungeon!=null)
+	        									addedArmor.setExcludedMaterials(excludedMaterials);
+            		        					if(branches!=null
+            		        					&&branches[0]==null
+            		        					&&dungeon!=null)
             		        						branches=dungeon.allBranches();
             		        					addedArmor.setAvailableBranches(branches);
             		        					armors[slotIndex][familyIndex]=addedArmor;
@@ -139,7 +148,7 @@ public class ArmorReader extends ItemReader{
 	        			while(readUntil(reader, event,ARTIFACTS)){
 	        				event = reader.nextEvent();
 	        				if(event.isStartElement()){       					
-	        					if(startElementName(event)==ARTIFACT_ARMOR){						
+	        					if(startElementName(event).equals(ARTIFACT_ARMOR)){						
 	        						while(readUntil(reader,event,ARTIFACT_ARMOR)){
 	        							event = reader.nextEvent();
 	        							if(event.isStartElement()){
@@ -230,18 +239,17 @@ public class ArmorReader extends ItemReader{
 			int armorDepth=currentLevel.armorDepth();
 			for(int j=0;i<armors.length&&armors[j][0]!=null;j++){
 				for(int k=0;k<armors.length&&armors[j][k]!=null;k++){
-					
 					int value=armors[j][k].getOverallValue();
-					Material[] materials=Material.suitableMaterials(branch, armorDepth);
-					for(int m=0;m<materials.length&&materials[m]!=null;m++){
-						Armor addedArmor=new Armor(armors[j][k]);
-						addedArmor.setMaterial(new Material(materials[m]), true);
-						currentLevel.addAvailableItem(addedArmor, Math.abs(value-armorDepth));
+				//	Material[] materials=Material.suitableMaterials(branch, armorDepth);	//TODO: set armor materials elsewhere
+				//	for(int m=0;m<materials.length&&materials[m]!=null;m++){
+						if(armors[j][k].availableInBranch(branch)){
+							Armor addedArmor=new Armor(armors[j][k]);
+							currentLevel.addAvailableItem(addedArmor, Math.abs(value-armorDepth));
+						}
 					}	
-				}	
-			}
-		}	
-	}
+				}
+			}	
+		}
 	
 	public static Armor createArmor(String slot, String armorFamily, String name, Material material){	//Do I really want a "name" argument for non-artifacts?
 		if(isSlotName(slot)){

@@ -32,27 +32,64 @@ TODO category: current goals
 set up materials so that there cannot be cloth weapons, rocks made of anything other
  	than wood, etc (UNCLAIMED)
 
-set up food/hunger penalties (UNCLAIMED)
+set up food/hunger penalties (done by Nick, but he needs to push again.)
+
+fix turn structure (UNCLAIMED)
+	*Nick's idea: have a "tick counter" for the player's current level, which increments by one until
+		it hits a monster's "turn delay" (an int value.)
+	*At this point, that monster gets to take its turn. Hitting the player's turn "pauses" the tick counter, 
+		but leaves it at the same value until the player's turn ends.
+	*Consider min/max turn delays (1-30? 1-40?)
+	*If the player and a monster have the same turn delay, the player moves first. (We think)
+	*NOTE: since a tick counter can only cycle properly by using the least common factor of the turn delay of every monster on the level,
+		consider not having it cycle at all, but incrementing indefinitely and letting a monster take its turn whenever tickCounter%turnDelay==0.
+	*On the player's turn, "pause" the counter by having the method's while loop return or something. Start counting again upon endPlayerTurn().
+	*This new system will affect monster/player speed, status effect durations (like stuns), message order, etc.
+	*test the basic concept in FightTester before starting to implement it
+	*Once it is implemented, test the system using a very slow monster (like a slime)
 
 add burdening penalties (UNCLAIMED)
 
 reorganize the monster class so that monster-only methods are in a separate section 
 	(or a separate class altogether) (UNCLAIMED)
+	
+consider making action display scrollable (UNCLAIMED)
+	*(should probably happen as part of a larger message system overhaul, 
+		which Nick might be working on.)
+		
+massive monster/item spawning overhaul (Robert)
 
-massive monster overhaul (Robert)
-	*gradient spawning
+	items:
+	*Set up proper material selection (i.e, no cloth darts, wooden armor, etc)
+		*in XML files, add excludeMaterial" tags. (can only have one type, and unlisted materials are assumed to be all available or all not available.
+		*only armor should be cloth, and not all armor	
+	*test proper branch recognition (i.e., all-branch items spawn on all branches, while branch-specific ones don't)
+	*test to see if items/monsters are being placed twice upon a level's creation, because there seem to be too many (especially on the cavern branch)
+	
+	monsters:
+	
+	*limit monster spawning based on branch
+	*to make things more efficient, consider figuring out a way to choose N random elements from an array quickly (without repetition).
+	*also consider making the check for whether an item/monster belongs in a branch somewhat more efficient and organized.
+	*inventory creation (random monster items, gold, varying "layouts", etc.)
+		*the final creation should happen upon a monster's placement on a level, but should somehow be constrained before this point.
 	*AI types (just add an "unintelligent" one for testing)
-	*slightly better chasing AI
-	*inventory creation (random monster items, gold, "layouts", etc.)
+	*slightly better chasing AI	
+		*if the player is close enough and physically reachable, the monster can "see" no matter what (by hearing?)
+		*make monsters guess which way the player went, avoiding backtracking
 	*item seeking? (might branch too much into more complex AI)
+	*consider changing class hierachy to Monster>Humanoid> Player
+		*Humanoids can equip items, have equipment coverage, can open doors, etc., but lack some Player-specific traits like XP and stats.
+			*However, if monster stats become too complex, (i.e., toHit, rangedToHit, intelligence, etc.) consider giving all monsters the
+				same stats as player, but simply giving those stats different effects.
 	*other stuff as I think of it
 
 consider removing the "genericName" private string from the item class (Robert)
 	*replace with individual cases returned by genericName()
 	
-consider making action display scrollable (UNCLAIMED)
-	*(should probably happen as part of a larger message system overhaul, 
-		which Nick might be working on.)
+maybe change item copy constructors so they inherit certain things from Item (like copying identification, stack size, available branches, etc)
+
+fix standard level gen algorithm so it goes room->tunnel->room-> tunnel (or tunnel->room->tunnel, etc.)
 
 TODO: sorted tasks
 
@@ -155,6 +192,8 @@ MONSTER STUFF
 
 work on monster AI:
 	*monsters should chase player for longer
+	*for testing purposes, try giving monsters the ability to open doors, then make AI that causes them to explore each room.
+		*The result should be that, whether or not monsters can open doors, they try to "explore" whenever possible.
 	*test with monsters that have multiple enemies
 	*create more rules for how monsters store their enemy lists, if necessary
 	*Consider AI states that allow for neutral interactions with other monsters (such as friendly following)
@@ -502,14 +541,43 @@ import javax.xml.stream.XMLStreamException;
 public class FightTester {
   
 	public static void main(String[] args){
-		
-		for(int i=0; i<10;i++){
-			System.out.println(Material.spawnableMaterials[i]);
+		//int depth=25;
+		int optionCount=(int) (knownMonsterCount()/1.8);
+		Monster[] monsterOptions=new Monster[optionCount];	//possible monsters to choose from
+		monsterOptions[0]=randomMonster();
+		System.out.println(monsterOptions[0]+": "+monsterOptions[0].getOverallPower());
+		for(int i=1;i<optionCount;i++){
+			
+			Monster nextMonster=randomMonster();
+			while(nextMonster.getName().equals(monsterOptions[i-1].getName()))
+				nextMonster=randomMonster();
+			System.out.println(nextMonster+": "+nextMonster.getOverallPower());
+			monsterOptions[i]=nextMonster;
 		}
-		//System.out.println(Material.getMaterial("iron").breakRate());
-		//System.out.println(Material.getMaterial("iron").getMultipliers()[1]);
+		Monster bestMonster=MonsterGenerator.bestMonster(monsterOptions, depth);
+		System.out.println("Monster chosen: "+bestMonster+"(distance of "+Math.abs(depth-bestMonster.getOverallPower())+")\n");
+		//System.out.println(MonsterGenerator.bestMonster(MonsterReader.genericMonsters, 45));
+		//TODO: better gradient spawning algorithm.
+		//IDEA: choose N monsters at random, then pick the one with the closest power for this level. (same for items)
 	}
 		//TODO: perform tests here.
 	
+	private static Monster randomMonster() {
+	
+		int monsterIndex=dice.nextInt(knownMonsterCount());
+		while(allMonsters[monsterIndex]==null){
+			monsterIndex=dice.nextInt(knownMonsterCount());
+		}
+		return allMonsters[monsterIndex];
+	}
+	private static int knownMonsterCount() {
+		int index=0;
+		while(index<allMonsters.length&&allMonsters[index]!=null){
+			index++;
+		}
+		return index;
+	}
+	static Monster[] allMonsters=MonsterReader.genericMonsters;	//TODO: make genericMonsters private after testing is done.
 	static Random dice=new Random();
+	static int depth=3;
 }

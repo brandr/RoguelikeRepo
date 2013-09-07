@@ -96,6 +96,7 @@ public class Weapon extends Equipment{
 			genericName=toCopy.genericName;
 			weaponFamily=toCopy.weaponFamily;
 			identified=toCopy.identified;
+			setAvailableBranches(toCopy.getAvailableBranches());
 			
 			setIcon(toCopy.getIcon());
 			spawnChance=toCopy.spawnChance;
@@ -114,6 +115,7 @@ public class Weapon extends Equipment{
 			setAmount(toCopy.getAmount());
 			setWeight(toCopy.getSingleWeight());
 			this.material=toCopy.getMaterial();		//not using setMaterial, because the copied weapon should already have its stats adjusted.
+			setExcludedMaterials(toCopy.getExcludedMaterials());
 		}
 	
 	@Override
@@ -132,6 +134,22 @@ public class Weapon extends Equipment{
 			return null;
 	}
 	
+	@Override
+	public void initialize(Level level) {	//upon ammo's placement in a level, it chooses a material and amount.
+		Branch branch=level.getBranch();
+		int weaponDepth=level.weaponDepth();
+		
+		Material[] materials=Material.suitableMaterials(this, branch, weaponDepth);	//the smaller this array is, the less variable materials will be.
+		if(materials==null)
+			return;
+		int materialIndex=dice.nextInt(materials.length);
+		while(materials[materialIndex]==null)
+			materialIndex=dice.nextInt(materials.length);
+		setMaterial(materials[materialIndex],true);
+		if(stackable())
+			setAmount(1+dice.nextInt(getStackSize()));	
+	}
+	
 	private void setCategory(String weaponCategory) {	//TODO: add more special stuff that happens in various cases. Consider setting piercing.
 		this.weaponCategory=weaponCategory;
 		switch(weaponCategory){
@@ -141,6 +159,8 @@ public class Weapon extends Equipment{
 		break;
 		}
 	}
+	
+	
 
 	//toStrings
 	

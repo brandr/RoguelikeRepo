@@ -24,6 +24,7 @@ import javax.xml.stream.events.XMLEvent;
 public class MonsterReader {	//reads in monsters from the monster manual .xml file
 	
 	static final String MONSTER = "monster";
+	static final String MONSTERS = "monsters";
 	
 	static final String NAME = "name";
 	static final String ICON = "icon";
@@ -38,11 +39,11 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	
 	static final String XP_REWARD = "xpReward";	//TODO: remove this.
 	
-	static final String SPAWN_CHANCE = "spawnChance";
+	//static final String SPAWN_CHANCE = "spawnChance";
 	
 	static final String BRANCH="branch";
-	static final String MINIMUM_DEPTH="minimumDepth";
-	static final String MAXIMUM_DEPTH="maximumDepth";
+	//static final String MINIMUM_DEPTH="minimumDepth";
+	//static final String MAXIMUM_DEPTH="maximumDepth";
 	
 	static final String INVENTORY="inventory";
 	
@@ -55,7 +56,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	static final String POWER="power";
 	static final String ARMOR_TYPE="armorType";
 	
-	public static void addDungeonMonsters(Dungeon dungeon){		//add monsters to the appropriate level in the dungeon
+	public static Monster[] allDungeonMonsters(Dungeon dungeon){		//add monsters to the appropriate level in the dungeon
 		try { 
 			
 			//write();
@@ -63,6 +64,10 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 			InputStream monsterInput = Thread.currentThread().getContextClassLoader().getResourceAsStream("MonsterManual.xml");
 			XMLInputFactory  xmlInFact = XMLInputFactory.newInstance();
 			XMLEventReader reader = xmlInFact.createXMLEventReader(monsterInput);
+			
+			Monster[] monsters=new Monster[2000];
+			
+			int monsterIndex=0;
 			
 			String name = "";
 	    	char icon = 0;
@@ -75,215 +80,141 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	    	int evasionValue=-1;
 	    	int xp=-1;
 	    	
-	    	double spawnChance=1.0;
+	    	//double spawnChance=1.0;
 	    	
-	    	int branch=1;
-	    	int minDepth=0;
-	    	int maxDepth=0;
-	    	
-	    	Inventory inventory=new Inventory();
-	    	
+	    	//Inventory inventory=new Inventory();	//TODO redesign monster inventory system.
 			while(reader.hasNext()) {
 				
 	        	XMLEvent event = reader.nextEvent();
 	        	if(event.isStartElement()){
-	        		StartElement startElement = event.asStartElement();
-	        		String elementName=startElement.getName().getLocalPart();
+	        		String elementName=startElementName(event);
 	        		switch(elementName){
-	        		case(BRANCH):
-	        			branch=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(MINIMUM_DEPTH):
-	        			minDepth=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(MAXIMUM_DEPTH):
-	        			maxDepth=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(NAME):
-	        			name=(reader.nextEvent().toString());
-	        			break;
-	        		case(ICON):
-	        			icon=(reader.nextEvent().toString().charAt(0));
-	        			break;
-	        		case(COLOR):
-	        			color=(reader.nextEvent().toString());
-	        			break;
-	        		case(HIT_POINTS):
-	        			hitPoints=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(BASE_DAMAGE):
-	        			baseDamage=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(BASE_ARMOR):
-	        			baseArmor=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(TO_HIT):
-	        			toHit=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(EVASION_VALUE):
-	        			evasionValue=Integer.parseInt(reader.nextEvent().toString());
-	        			break;
-	        		case(SPAWN_CHANCE):
-	        			spawnChance=Double.parseDouble(reader.nextEvent().toString());
-	        			break;
-	        		case(INVENTORY):		//idea: could read in all items from another xml file, then give monsters inventories based on indexed items.
-	        			while(reader.hasNext()&&!(event.isEndElement()
-	        				&&event.asEndElement().getName().getLocalPart()==INVENTORY)) {
-	        	        	event = reader.nextEvent();
-	        	        	if(event.isStartElement()){
-	        	        		startElement=event.asStartElement();
-	        	        		elementName=startElement.getName().getLocalPart();
-	        	        		switch(elementName){
-	        	        		case(WEAPON):
-	        	        			Weapon weapon=new Weapon();
-	    	        			while(reader.hasNext()&&!(event.isEndElement()
-	    		        				&&event.asEndElement().getName().getLocalPart()==WEAPON)){
-	    	        					event = reader.nextEvent();				        	        					
-	    	        					if(event.isStartElement()){
-	    		        					startElement = event.asStartElement();
-	    		        	        		elementName=startElement.getName().getLocalPart();
-	    		        	        		switch(elementName){
-	    		        	        		case ITEM_NAME:						        	        			
-	    		        	        			weapon.name=(reader.nextEvent().toString());
-	    		        	        			break;
-	    		        	        		case HANDS:
-	    		        	        			if(Integer.parseInt(reader.nextEvent().toString())==2)
-	    		        	        				weapon.twoHanded=true;
-	    		        	        			break;
-	    		        	        		case POWER:
-	    		        	        			weapon.setPower(Integer.parseInt(reader.nextEvent().toString()));		
-	    		        	        			break;
-	    		        	        		case WEAPON_CATEGORY:
-	    		        	        			weapon.weaponCategory=(reader.nextEvent().toString());
-	    		        	        			break;
-	    		        	        		default:
-	    		        	        			break;
-	    		        	        		}
-	    	        					}
-	    	        					else if(event.isEndElement()&&(event.asEndElement().getName().getLocalPart()==WEAPON)){
-	    	        						if(weapon.name!=null)
-	    	        							inventory.addItem(weapon);		
-	    	        						break;
-	    	        					}
-	    	        				}
-	        	        			break;
-	        	        		case(ARMOR):
-	        	        			Armor armor=new Armor();
-	        	        		while(reader.hasNext()&&!(event.isEndElement()
-	        	        				&&event.asEndElement().getName().getLocalPart()==ARMOR)){
-	            					event = reader.nextEvent();	
-	               					if(event.isStartElement()){
-	        	        					startElement = event.asStartElement();
-	        	        	        		elementName=startElement.getName().getLocalPart();
-	        	        	        		switch(elementName){
-	        	        	        		case ITEM_NAME:
-	        	        	        			armor.name=(reader.nextEvent().toString());
-	        	        	        			break;
-	        	        	        		case ARMOR_TYPE:
-	        	        	          			armor.setArmorType(reader.nextEvent().toString());
-	        	        	        			break;
-	        	        	        		case POWER:
-	        	        	        			armor.setArmorValue(Integer.parseInt(reader.nextEvent().toString()));
-	        	        	        			break;
-	        	        	        		default:
-	        	        	        			break;
-	        	        	        		}
-	               						}
-	               					else if(event.isEndElement()&&(event.asEndElement().getName().getLocalPart()==ARMOR)){
-	           						if(armor.name!=null){
-	           							armor.setMaterial(Material.getMaterial("iron"),false);	//temporary. Will be removed when monter items are changed.
-	           							inventory.addItem(armor);
-	           						}
-	           						break;		
-	               					}
-	        	        		}
-	        	        			break;
-	        	        		default:
-	        	        			break;
-	        	        		}
-	        	        	}
-	        	        	else if (event.isEndElement()){
-	        	        		EndElement endElement = event.asEndElement();
-	        	        		elementName=endElement.getName().getLocalPart();
-	        	        		switch(elementName){
-	        	        		case(INVENTORY):
-	        	        			break;
-	        	        		default:
-	        	        			break;
-	        	        		}
-	        	        	}
+        				case(MONSTERS):
+	        			while(readUntil(reader, event,MONSTERS)){
+	        				
+	        				event = reader.nextEvent();
+	        					if(event.isStartElement()
+	        					&&startElementName(event).equals(MONSTER)){
+	        						
+	        						Branch[] branches=null;
+	        						if(dungeon!=null)
+	        							branches=new Branch[Dungeon.BRANCH_COUNT];
+						
+	        						while(readUntil(reader,event,MONSTER)){
+	        							event = reader.nextEvent();
+	        							if(event.isStartElement()){
+	        								switch(startElementName(event)){
+	        								case(BRANCH):
+	        									int index=0;
+	        									while(branches!=null&&index<branches.length&&branches[index]!=null)
+	        										index++;
+	        									if(dungeon!=null)
+	        										branches[index]=dungeon.getBranch(Integer.parseInt(reader.nextEvent().toString()));
+	        									break;
+	        								case(NAME):
+	        									name=(reader.nextEvent().toString());break;
+	        								case(ICON):
+	        									icon=(reader.nextEvent().toString().charAt(0));break;
+	        								case(COLOR):
+	        									color=(reader.nextEvent().toString());break;
+	        								case(HIT_POINTS):
+	        									hitPoints=Integer.parseInt(reader.nextEvent().toString());break;
+	        								case(BASE_DAMAGE):
+	        									baseDamage=Integer.parseInt(reader.nextEvent().toString());break;
+	        								case(BASE_ARMOR):
+	        									baseArmor=Integer.parseInt(reader.nextEvent().toString());break;
+	        								case(TO_HIT):
+	        									toHit=Integer.parseInt(reader.nextEvent().toString());break;
+	        								case(EVASION_VALUE):
+	        									evasionValue=Integer.parseInt(reader.nextEvent().toString());break;
+	        								default:
+	        									break;
+	        								}
+	        							}	
+	        							else if(event.isEndElement()){
+	        								switch(endElementName(event)){
+	        								case(MONSTER):        			
+	        									Monster addedMonster=new Monster();
+	        									
+	        								//TODO: set all defaults here
+												if(toHit==-1)
+													toHit=getDefaultToHit(baseDamage);
+												if(evasionValue==-1)
+													evasionValue=getDefaultEvasionValue(toHit);
+												if(xp==-1)
+													xp=baseDamage;
+	        			
+												addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!
+												addedMonster.color=color;
+												addedMonster.xp=xp;
+												if(branches!=null		//this *should* ensure than no branch input means a monster is available on all branches.
+													&&branches[0]==null
+													&&dungeon!=null)
+													branches=dungeon.allBranches();
+						
+												//TODO: figure out what to do with XML-inputted spawnchance and available braches.
+	        								//addedMonster.spawnChance=spawnChance;
+												addedMonster.setAvailableBranches(branches);
+												monsters[monsterIndex]=addedMonster;
+												monsterIndex++;
+	        							
+	        								//defaults still necessary?
+												//branch=1;
+	        			        				color="000000";
+	        		        				
+	        			        				hitPoints=-1;
+	        			        				baseDamage=-1;
+	        			        				baseArmor=-1;		//TODO: reset all defaults here. Add more as more defaults are added to the game.
+	        			        				toHit=-1;
+	        			        				evasionValue=-1;
+	        		        		    	
+	        			        				xp=-1;
+	        		        		    	//defaults still necessary?
+	        			        				break;
+	        								default:
+	        									break;
+	        								}
+	        							}
+	        						}
+	        					}
+	        				}
 	        			}
-	        			break;
-	        		default:
-	        			break;
 	        		}
 	        	}
-	        	else if(event.isEndElement()){
-	        		EndElement endElement = event.asEndElement();
-	        		String elementName=endElement.getName().getLocalPart();
-	        	switch(elementName){
-	        	
-	        	case(MONSTER):
-	        		if(dungeon.depth>maxDepth){		//off by one because the first level is shown as 1, but processed as 0.
-	        			
-	        			Monster addedMonster=new Monster();
-        				//TODO: set all defaults here
-        				if(hitPoints==-1)
-        					hitPoints=getDefaultHitPoints(minDepth,maxDepth);
-        				if(baseDamage==-1)
-        					baseDamage=getDefaultBaseDamage(minDepth,maxDepth);
-        				if(baseArmor==-1)
-        					baseArmor=getDefaultBaseArmor(minDepth,maxDepth);
-        		    	if(toHit==-1)
-        		    		toHit=getDefaultToHit(minDepth,maxDepth);
-        		    	if(evasionValue==-1)
-        		    		evasionValue=getDefaultEvasionValue(minDepth,maxDepth);
-        		    	if(xp==-1)
-        		    		xp=getDefaultXp(minDepth,maxDepth);
-        		    	
-        		    	
-        		    	
-        		    	addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!
-        				addedMonster.color=color;
-        								
-        		    	addedMonster.xp=xp;
-        		    	addedMonster.spawnChance=spawnChance;
-
-	        			for(int i=minDepth;i<=maxDepth;i++){	
-	        				addedMonster.inventory=new Inventory(inventory);
-	        				dungeon.addAvailableMonster(addedMonster, dungeon.getBranch(branch), i);
-	        			//	if(branch==2)
-	        			//		System.out.println(addedMonster);
-	        			}
-	        			
-	        			inventory.setEmpty();  
-	        			//the only values not reset  here are name, icon, minlevel and maxlevel. That is because these have no defaults.
-	        			branch=1;
-	        			color="000000";
-        				
-        				hitPoints=-1;
-        		    	baseDamage=-1;
-        		    	baseArmor=-1;		//TODO: reset all defaults here. Add more as more defaults are added to the game.
-        		    	toHit=-1;
-        		    	evasionValue=-1;
-        		    	
-        		    	xp=-1;
-        		    	spawnChance=1.0;
-	        		}
-        			break;
-        		default:
-        			break;
-	        		}
-	        	}
-			}
 			
-			}catch(XMLStreamException exc) {
+			return monsters;
+			
+		}catch(XMLStreamException exc) {
+			return null;
 	    }
+		
+	}
+
+	public static void addDungeonMonsters(Dungeon dungeon, Monster[] monsters) {
+		for(int i=0;i<Dungeon.BRANCH_COUNT&&dungeon.getBranch(i)!=null;i++){
+			addBranchMonsters(dungeon, dungeon.getBranch(i),monsters);
+		}
 	}
 	
+	private static void addBranchMonsters(Dungeon dungeon, Branch branch, Monster[] monsters) {
+		for(int i=branch.startDepth();i<branch.endDepth();i++){
+			
+			Level currentLevel=branch.getLevel(i);
+			int monsterDepth=currentLevel.monsterDepth();
+			for(int j=0;j<monsters.length&&monsters[j]!=null;j++){	//this probably isn't the most efficient way to check which monsters are available in which branches.
+				if(monsters[j].availableInBranch(branch)){
+					int value=monsters[j].getOverallPower();
+					Monster addedMonster=new Monster(monsters[j]);
+					addedMonster.inventory=new Inventory();	//TODO: implement monster inventories, but probably not here.
+					currentLevel.addAvailableMonster(addedMonster, Math.abs(value-monsterDepth));
+				}
+			}
+		}	
+	}
+
 	//default attribute getters below. TODO: put sensible return values in.
 	//Consider using monster variance to make these vary more.
-	private static int getDefaultHitPoints(int minDepth, int maxDepth) {
+/*	private static int getDefaultHitPoints(int minDepth, int maxDepth) {
 		int averageDepth=(minDepth+maxDepth)/2;
 		return 10+averageDepth/2;
 	}
@@ -304,21 +235,39 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 		else if(averageDepth>=40)
 			return 10;
 		return 0;
+	}*/
+	
+	private static int getDefaultToHit(int baseDamage) {		//this and evade (both 5) are too low for level 1.
+		return 4+baseDamage/4;
+	}
+	private static int getDefaultEvasionValue(int toHit) {
+		return 2+toHit/2;
 	}
 	
-	private static int getDefaultToHit(int minDepth, int maxDepth) {		//this and evade (both 5) are too low for level 1.
-		int averageDepth=(minDepth+maxDepth)/2;
-		return 8+averageDepth/8;
+	//xml shortcut methods (based on ItemReader, should maybe be moved to a more general "Reader" class)
+	
+	protected static boolean readUntil(XMLEventReader reader, XMLEvent event,
+			String endString) {
+		return reader.hasNext()&&!(event.isEndElement()
+        	&&event.asEndElement().getName().getLocalPart()==endString);
 	}
-	private static int getDefaultEvasionValue(int minDepth, int maxDepth) {
-		int averageDepth=(minDepth+maxDepth)/2;
-		return 2+averageDepth/8;
+	
+	protected static String startElementName(XMLEvent event){
+		if(event.isStartElement()){
+    		StartElement startElement = event.asStartElement();
+    		return startElement.getName().getLocalPart();
+		}
+		return null;
 	}
-	private static int getDefaultXp(int minDepth, int maxDepth){
-		int averageDepth=(minDepth+maxDepth)/2;
-		return (int)(Math.pow(1.2, averageDepth));
+	
+	protected static String endElementName(XMLEvent event){
+		if(event.isEndElement()){
+    		EndElement endElement = event.asEndElement();
+    		return endElement.getName().getLocalPart();
+		}
+		return null;
 	}
-
+	
 //xml writing is unused until I figure it out. eventually I want a gui that will xml write for when Nick uses it.
 public static void write(){
 FileOutputStream fos = null;
@@ -345,4 +294,7 @@ FileOutputStream fos = null;
     }
     return;
 }
+
+public static Monster[] genericMonsters=allDungeonMonsters(null);	//TODO: make private after testing
+
 }

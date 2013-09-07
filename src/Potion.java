@@ -43,6 +43,7 @@ public class Potion extends Consumable{	//IDEA: a potion of confusion might make
 		setStackSize(STANDARD_POTION_STACK_SIZE);
 		setAmount(copyPotion.getAmount());
 		identified=copyPotion.identified;
+		setAvailableBranches(copyPotion.getAvailableBranches());
 		consumable=true;
 		
 		baseValue=copyPotion.baseValue;
@@ -51,6 +52,12 @@ public class Potion extends Consumable{	//IDEA: a potion of confusion might make
 		setEffect(copyPotion.potionType);
 		setIcon(copyPotion.getIcon());
 	}
+	
+	@Override
+	public void initialize(Level level) {	//TODO: set stack size here.
+		setAmount(1+dice.nextInt(getStackSize()));
+	}
+	
 	@Override
 	public String genericName(){
 		return colorName();
@@ -188,5 +195,7 @@ public class Potion extends Consumable{	//IDEA: a potion of confusion might make
 	//private double spawnChance;	//TODO: set this in final potion array. 
 	private String color;		//TODO: set this for a potion type at the start of the game. (consider putting a final potion array in dungeon
 								//and cloning a potion whenever necessary. 
+
+
 
 }

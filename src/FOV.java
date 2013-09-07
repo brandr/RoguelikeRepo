@@ -74,9 +74,7 @@ public class FOV {	//field of view. belongs to players and monsters.
 								if(tilesBehind[i]!=null)
 									tilesVisible[tilesBehind[i].xCoord][tilesBehind[i].yCoord]=false;
 							}
-						
-					}
-						
+					}	
 				}
 					
 				else {	//if a tile is already marked as invisible, make all tiles behind it invisible, too.

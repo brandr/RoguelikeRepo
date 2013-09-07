@@ -27,12 +27,12 @@ public class AIState {
 			monsterLostResponse();
 		break;
 		case(HUNTING):	//TODO: after reaching target tile, guess a new target tile, up to a point. (define what that point is) Eventually resume wandering.
-			if(targetTile!=null&&!targetTile.equals(monster.currentTile))
+			if(targetTile!=null&&!targetTile.equalTo(monster.currentTile))
 				monster.moveTowards(targetTile);
 			else{
 				state=IDLE;
 				monsterLostResponse();
-			}
+				}
 			break;
 		case(IDLE):
 			wander();
@@ -46,9 +46,10 @@ public class AIState {
 			monsterLostResponse();
 		else{
 			switchStates(PURSUIT);
-			targetTile=target.currentTile;
+			targetTile=new Tile(target.currentTile);
 			monster.moveTowards(target);
 		}
+		//System.out.println(state);
 	}
 	
 	private void wander(){	//choose an empty, adjacent tile to move into.
