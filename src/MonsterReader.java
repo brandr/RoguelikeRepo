@@ -64,9 +64,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 			InputStream monsterInput = Thread.currentThread().getContextClassLoader().getResourceAsStream("MonsterManual.xml");
 			XMLInputFactory  xmlInFact = XMLInputFactory.newInstance();
 			XMLEventReader reader = xmlInFact.createXMLEventReader(monsterInput);
-			
 			Monster[] monsters=new Monster[2000];
-			
 			int monsterIndex=0;
 			
 			String name = "";
@@ -84,22 +82,18 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	    	
 	    	//Inventory inventory=new Inventory();	//TODO redesign monster inventory system.
 			while(reader.hasNext()) {
-				
 	        	XMLEvent event = reader.nextEvent();
 	        	if(event.isStartElement()){
 	        		String elementName=startElementName(event);
 	        		switch(elementName){
         				case(MONSTERS):
 	        			while(readUntil(reader, event,MONSTERS)){
-	        				//System.out.println("HI");
 	        				event = reader.nextEvent();
 	        					if(event.isStartElement()
 	        					&&startElementName(event).equals(MONSTER)){
-	        						
 	        						Branch[] branches=null;
 	        						if(dungeon!=null)
 	        							branches=new Branch[Dungeon.BRANCH_COUNT];
-						
 	        						while(readUntil(reader,event,MONSTER)){
 	        							event = reader.nextEvent();
 	        							if(event.isStartElement()){
@@ -135,7 +129,6 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        								switch(endElementName(event)){
 	        								case(MONSTER):        			
 	        									Monster addedMonster=new Monster();
-	        									
 	        								//TODO: set all defaults here
 												if(toHit==-1)
 													toHit=getDefaultToHit(baseDamage);
