@@ -9,11 +9,6 @@ public class Monster extends Entity{
 	public final int INVENTORY_SLOTS=6;		//number of places to wear equipment
 	public final Weapon UNARMED=new Weapon("hands",0,Weapon.FISTS,Material.FLESH);
 	
-	public static final String UNINTELLIGENT="unintelligent";
-	public static final String INTELLIGENT="intelligent";
-	
-	public static final String[] MONSTER_INTELLIGENCES={UNINTELLIGENT,INTELLIGENT};
-	
 	Random randGenerator=new Random();
 	
 	public Monster(){
@@ -49,6 +44,8 @@ public class Monster extends Entity{
 		name=monster.name;
 		setIcon(monster.getIcon());
 		color=monster.color;
+		//monsterAIState=monster.monsterAIState;
+				//new AIState(monster.monsterAIState);	//TODO: finish
 		
 		setHitPoints(monster.maxHitPoints());
 		setBaseDamage(monster.baseDamage);
@@ -171,7 +168,7 @@ public class Monster extends Entity{
 	}
 	
 	private void decideMove(){
-		AIstate.decideMove();
+		monsterAIState.decideMove();
 	}
 
 	public boolean canSee(Tile tile){
@@ -262,6 +259,8 @@ public class Monster extends Entity{
 	
 	public Monster[] allEnemiesInSight(){ //returns all enemies in sight
 		Monster[] enemiesInSight=new Monster[100];
+		if(fov==null)
+			return null;
 		Monster[] allMonstersInSight=fov.visibleMonsters();	//TODO: this is the only part that needs to be changed
 		int index=0;
 		for(int i=0; i<allMonstersInSight.length;i++){
@@ -364,8 +363,12 @@ public class Monster extends Entity{
 
 	//AI setters/getters
 	
+	public String getIntelligence() {
+		return monsterAIState.getIntelligence();
+	}
+	
 	public void setIntelligence(String intelligence) {
-		//TODO	
+		monsterAIState.setIntelligence(intelligence);
 	}
 	
 	//movement methods		(consider giving some of these their own class)
@@ -1257,7 +1260,7 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 
 	public FOV fov;
 	private int turnDelay=20;
-	private AIState AIstate=new AIState(AIState.IDLE,this);
+	private AIState monsterAIState=new AIState(AIState.IDLE,this);
 	
 	protected String name;
 	protected int[] hitPoints={0,0};	//two-int array, with first as current and second and maximum
@@ -1286,5 +1289,4 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	public boolean stunnedLastTurn=false; //keeps track of whether this monster stunned another monster the last turn.
 
 	private Branch[] availableBranches=new Branch[Dungeon.BRANCH_COUNT];
-
 }

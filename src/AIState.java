@@ -7,9 +7,39 @@ public class AIState {
 	public final static String HUNTING="hunting";	//searching for a monster that has disappeared from view.
 	public final static String IDLE="idle";		//wandering around.
 
+	public static final String UNINTELLIGENT="unintelligent";
+	public static final String INTELLIGENT="intelligent";
+	
+	public static final String[] MONSTER_INTELLIGENCES={UNINTELLIGENT,INTELLIGENT};
+	
 	public AIState(String state, Monster monster){
 		this.monster=monster;
 		this.state=state;
+	}
+	
+	/*public AIState(AIState AIstate) {
+		monster=AIstate.monster;
+		intelligence=AIstate.intelligence;
+		state=AIstate.state;
+	}*/
+
+	public void decideMove() {
+		switch(intelligence){
+		case(INTELLIGENT):
+			Monster target=nearestEnemy();
+			if(target==null)
+				targetLostResponse();
+			else{
+				switchStates(PURSUIT);
+				targetTile=new Tile(target.currentTile);
+				saveMove();
+				monster.moveTowards(target);
+				}
+			break;
+		case(UNINTELLIGENT):
+			wander();
+			break;
+		}
 	}
 	
 	public void switchStates(String state){
@@ -68,18 +98,6 @@ public class AIState {
 		}
 		return unseenTiles;
 	}
-
-	public void decideMove() {
-		Monster target=nearestEnemy();
-		if(target==null)
-			targetLostResponse();
-		else{
-			switchStates(PURSUIT);
-			targetTile=new Tile(target.currentTile);
-			saveMove();
-			monster.moveTowards(target);
-		}
-	}
 	
 	private void wander(){	//choose an empty, adjacent tile to move into.
 		Tile[] choices=monster.adjacentEmptyTiles();
@@ -96,7 +114,7 @@ public class AIState {
 	}
 	
 	private Monster determineClosest(Monster[] availableMonsters) {
-		if(availableMonsters[0]==null)
+		if(availableMonsters==null||availableMonsters[0]==null)
 			return null;
 		Monster closestMonster=availableMonsters[0];
 		int index=0;
@@ -117,13 +135,22 @@ public class AIState {
 	private void saveMove(){	//saves monster's current tile location before moving
 		previousTile=monster.currentTile;
 	}
+	
+	public String getIntelligence() {
+		return intelligence;
+	}	
+	
+	public void setIntelligence(String intelligence) {
+		this.intelligence=intelligence;
+	}
 
+	private String intelligence=INTELLIGENT;
 	private String state;
 	private Monster monster;
 	private Tile targetTile=null;
 	private Tile previousTile;
 	private Tile[] plannedPath=new Tile[20];
 	private Random dice=new Random();
-	
+
 	
 }

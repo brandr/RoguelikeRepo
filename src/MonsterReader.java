@@ -74,7 +74,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 			String name = "";
 	    	char icon = 0;
 	    	String color="000000";
-	    	String intelligence=Monster.INTELLIGENT;
+	    	String intelligence=AIState.INTELLIGENT;
 	    	
 	    	int hitPoints=-1;
 	    	int baseDamage=-1;
