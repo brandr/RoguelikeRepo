@@ -2,7 +2,8 @@ import java.util.Random;
 
 public class Level {
 	public Dungeon levelDungeon;
-
+	private TurnCounter turnCounter=new TurnCounter(this);
+	
 	public Stairs[] downStairs = new Stairs[10];
 	public Stairs[] upStairs = new Stairs[10];
 	
@@ -20,10 +21,11 @@ public class Level {
 	
 	public MonsterGenerator monsterGenerator=null;
 	public ItemGenerator itemGenerator=null;
+	
 	public Monster[] levelMonsters=new Monster[300];
 	Random rng=new Random();
 	
-	public final static char EMPTY_TILE_ICON = '.';
+	public final static char EMPTY_TILE_ICON = '·';
 	public final static char WALL_ICON = 'X';
 	public final static char CLOSED_DOOR_ICON = '+';
 	public final static char VERTICAL_OPEN_DOOR_ICON = '-';
@@ -67,6 +69,10 @@ public class Level {
 	
 	public int levelArea(){
 		return xSize*ySize;
+	}
+	
+	public void startTurnCounter(){
+		turnCounter.startTurnCounter(this);
 	}
 	
 	//checks to see if there is room to put a room at the given place.
@@ -943,4 +949,6 @@ public class Level {
 	public int ammoDepth() {
 		return floor+levelBranch.itemModifier(Ammo.class);
 	}
+
+	
 } 

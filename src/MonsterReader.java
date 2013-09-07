@@ -30,6 +30,8 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	static final String ICON = "icon";
 	static final String COLOR = "color";
 	
+	static final String INTELLIGENCE = "intelligence";
+	
 	static final String HIT_POINTS = "hitPoints";
 	static final String BASE_DAMAGE = "baseDamage";
 	static final String BASE_ARMOR = "baseArmor";
@@ -64,12 +66,15 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 			InputStream monsterInput = Thread.currentThread().getContextClassLoader().getResourceAsStream("MonsterManual.xml");
 			XMLInputFactory  xmlInFact = XMLInputFactory.newInstance();
 			XMLEventReader reader = xmlInFact.createXMLEventReader(monsterInput);
+			
 			Monster[] monsters=new Monster[2000];
+			
 			int monsterIndex=0;
 			
 			String name = "";
 	    	char icon = 0;
 	    	String color="000000";
+	    	String intelligence=Monster.INTELLIGENT;
 	    	
 	    	int hitPoints=-1;
 	    	int baseDamage=-1;
@@ -82,18 +87,22 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	    	
 	    	//Inventory inventory=new Inventory();	//TODO redesign monster inventory system.
 			while(reader.hasNext()) {
+				
 	        	XMLEvent event = reader.nextEvent();
 	        	if(event.isStartElement()){
 	        		String elementName=startElementName(event);
 	        		switch(elementName){
         				case(MONSTERS):
 	        			while(readUntil(reader, event,MONSTERS)){
+	        				//System.out.println("HI");
 	        				event = reader.nextEvent();
 	        					if(event.isStartElement()
 	        					&&startElementName(event).equals(MONSTER)){
+	        						
 	        						Branch[] branches=null;
 	        						if(dungeon!=null)
 	        							branches=new Branch[Dungeon.BRANCH_COUNT];
+						
 	        						while(readUntil(reader,event,MONSTER)){
 	        							event = reader.nextEvent();
 	        							if(event.isStartElement()){
@@ -111,6 +120,8 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        									icon=(reader.nextEvent().toString().charAt(0));break;
 	        								case(COLOR):
 	        									color=(reader.nextEvent().toString());break;
+	        								case(INTELLIGENCE):
+	        									intelligence=(reader.nextEvent().toString());break;
 	        								case(HIT_POINTS):
 	        									hitPoints=Integer.parseInt(reader.nextEvent().toString());break;
 	        								case(BASE_DAMAGE):
@@ -129,6 +140,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        								switch(endElementName(event)){
 	        								case(MONSTER):        			
 	        									Monster addedMonster=new Monster();
+	        									
 	        								//TODO: set all defaults here
 												if(toHit==-1)
 													toHit=getDefaultToHit(baseDamage);
@@ -139,6 +151,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        			
 												addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!
 												addedMonster.color=color;
+												addedMonster.setIntelligence(intelligence);
 												addedMonster.xp=xp;
 												if(branches!=null		//this *should* ensure than no branch input means a monster is available on all branches.
 													&&branches[0]==null

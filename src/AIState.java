@@ -1,5 +1,6 @@
 import java.util.Random;
 
+
 public class AIState {
 
 	public final static String PURSUIT="pursuit";	//the act of chasing a monster that is in view.
