@@ -20,18 +20,33 @@ public class AIState {
 		return monster.getCurrentLevel();
 	}
 	
-	private void monsterLostResponse(){
+	private void targetLostResponse(){	//TODO: make this more streamlined and clear. Figure out a good monster action cycle before coding more.
 		switch(state){
 		case(PURSUIT):
 			state=HUNTING;
-			monsterLostResponse();
-		break;
+			Tile[] targetChoices=adjacentUnseenTiles(level(),targetTile);
+			if(targetChoices[0]==null)
+				state=IDLE;
+			else
+				plannedPath[0]=targetChoices[0];//TODO: choose planned path more randomly.
+			targetLostResponse();
+			break;
 		case(HUNTING):	//TODO: after reaching target tile, guess a new target tile, up to a point. (define what that point is) Eventually resume wandering.
-			if(targetTile!=null&&!targetTile.equalTo(monster.currentTile))
-				monster.moveTowards(targetTile);
+			if(targetTile!=null){
+				if(!targetTile.equalTo(monster.currentTile)){
+					saveMove();
+					monster.moveTowards(targetTile);
+				}
+				else{
+					if(!monster.currentTile.equalTo(plannedPath[0]))
+						monster.moveTowards(plannedPath[0]);
+					state=IDLE;
+					return;
+				}
+			}
 			else{
 				state=IDLE;
-				monsterLostResponse();
+				targetLostResponse();
 				}
 			break;
 		case(IDLE):
@@ -40,16 +55,30 @@ public class AIState {
 		}
 	}
 	
+	private Tile[] adjacentUnseenTiles(Level level, Tile targetTile) {
+		Tile[] adjacents=Movement.adjacentTiles(level(), targetTile);	//find all tiles adjacent to the target's last known position
+		Tile[] unseenTiles=new Tile[adjacents.length];
+		int index=0;
+		for(int i=0; i<adjacents.length; i++){
+			Tile nextTile=adjacents[i];
+			if(nextTile!=null&&!monster.canSee(nextTile)){	//if the tile is on the map and not in the monster's view
+				unseenTiles[index]=nextTile;
+				index++;
+			}
+		}
+		return unseenTiles;
+	}
+
 	public void decideMove() {
 		Monster target=nearestEnemy();
 		if(target==null)
-			monsterLostResponse();
+			targetLostResponse();
 		else{
 			switchStates(PURSUIT);
 			targetTile=new Tile(target.currentTile);
+			saveMove();
 			monster.moveTowards(target);
 		}
-		//System.out.println(state);
 	}
 	
 	private void wander(){	//choose an empty, adjacent tile to move into.
@@ -58,6 +87,7 @@ public class AIState {
 		while(choices[randomIndex]==null){
 			randomIndex=dice.nextInt(choices.length);
 		}
+		saveMove();
 		monster.moveTowards(choices[randomIndex]);
 	}
 	
@@ -83,10 +113,16 @@ public class AIState {
 		return Math.max(Math.abs(monster.getXPos()-otherMonster.getXPos()),
 				Math.abs(monster.getYPos()-otherMonster.getYPos()));
 	}
+	
+	private void saveMove(){	//saves monster's current tile location before moving
+		previousTile=monster.currentTile;
+	}
 
 	private String state;
 	private Monster monster;
 	private Tile targetTile=null;
+	private Tile previousTile;
+	private Tile[] plannedPath=new Tile[20];
 	private Random dice=new Random();
 	
 	

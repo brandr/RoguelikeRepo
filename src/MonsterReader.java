@@ -91,7 +91,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        		switch(elementName){
         				case(MONSTERS):
 	        			while(readUntil(reader, event,MONSTERS)){
-	        				
+	        				//System.out.println("HI");
 	        				event = reader.nextEvent();
 	        					if(event.isStartElement()
 	        					&&startElementName(event).equals(MONSTER)){
