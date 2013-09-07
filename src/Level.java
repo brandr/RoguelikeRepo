@@ -20,11 +20,10 @@ public class Level {
 	
 	public MonsterGenerator monsterGenerator=null;
 	public ItemGenerator itemGenerator=null;
-	
 	public Monster[] levelMonsters=new Monster[300];
 	Random rng=new Random();
 	
-	public final static char EMPTY_TILE_ICON = '·';
+	public final static char EMPTY_TILE_ICON = '.';
 	public final static char WALL_ICON = 'X';
 	public final static char CLOSED_DOOR_ICON = '+';
 	public final static char VERTICAL_OPEN_DOOR_ICON = '-';

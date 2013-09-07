@@ -31,6 +31,8 @@ TODO category: current goals
 
 set up materials so that there cannot be cloth weapons, rocks made of anything other
  	than wood, etc (UNCLAIMED)
+ 	*excluded materials are set up, but not implemented. Use xml files and
+ 		ItemReader class to turn off materials as necessary
 
 set up food/hunger penalties (done by Nick, but he needs to push again.)
 
@@ -427,42 +429,12 @@ import javax.xml.stream.XMLStreamException;
 public class FightTester {
   
 	public static void main(String[] args){
-		//int depth=25;
-		int optionCount=(int) (knownMonsterCount()/1.8);
-		Monster[] monsterOptions=new Monster[optionCount];	//possible monsters to choose from
-		monsterOptions[0]=randomMonster();
-		System.out.println(monsterOptions[0]+": "+monsterOptions[0].getOverallPower());
-		for(int i=1;i<optionCount;i++){
-			
-			Monster nextMonster=randomMonster();
-			while(nextMonster.getName().equals(monsterOptions[i-1].getName()))
-				nextMonster=randomMonster();
-			System.out.println(nextMonster+": "+nextMonster.getOverallPower());
-			monsterOptions[i]=nextMonster;
+		for(int i=0; i<30;i++){
+		System.out.println(Dice.xdy(2,6));
 		}
-		Monster bestMonster=MonsterGenerator.bestMonster(monsterOptions, depth);
-		System.out.println("Monster chosen: "+bestMonster+"(distance of "+Math.abs(depth-bestMonster.getOverallPower())+")\n");
-		//System.out.println(MonsterGenerator.bestMonster(MonsterReader.genericMonsters, 45));
-		//TODO: better gradient spawning algorithm.
-		//IDEA: choose N monsters at random, then pick the one with the closest power for this level. (same for items)
 	}
-		//TODO: perform tests here.
 	
-	private static Monster randomMonster() {
-	
-		int monsterIndex=dice.nextInt(knownMonsterCount());
-		while(allMonsters[monsterIndex]==null){
-			monsterIndex=dice.nextInt(knownMonsterCount());
-		}
-		return allMonsters[monsterIndex];
-	}
-	private static int knownMonsterCount() {
-		int index=0;
-		while(index<allMonsters.length&&allMonsters[index]!=null){
-			index++;
-		}
-		return index;
-	}
+
 	static Monster[] allMonsters=MonsterReader.genericMonsters;	//TODO: make genericMonsters private after testing is done.
 	static Random dice=new Random();
 	static int depth=3;
