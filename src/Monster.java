@@ -44,6 +44,8 @@ public class Monster extends Entity{
 		name=monster.name;
 		setIcon(monster.getIcon());
 		color=monster.color;
+		monsterAIState=new AIState(AIState.IDLE,this);
+		monsterAIState.setIntelligence(monster.monsterAIState.getIntelligence());
 		//monsterAIState=monster.monsterAIState;
 				//new AIState(monster.monsterAIState);	//TODO: finish
 		
@@ -53,6 +55,7 @@ public class Monster extends Entity{
 		baseArmor=monster.baseArmor;
 		toHitValue=monster.toHitValue;
 		dodgeValue=monster.dodgeValue;
+		turnDelay=monster.turnDelay;
 		
 		stunChance=monster.stunChance;
 		critChance=monster.critChance;
@@ -1250,6 +1253,11 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	}
 	
 	//turn delay methods
+	
+	public void setTurnDelay(int turnDelay){
+		if(turnDelay>0)
+			this.turnDelay=turnDelay;
+	}
 	
 	public int getTurnDelay() {
 		return turnDelay;

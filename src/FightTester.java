@@ -18,7 +18,7 @@ sometimes the screen "wiggles" (meaning everything in a row shifts right or left
 Resizing the window causes fields to overlap when they shouldn't.
 
 occasionally when a monster spawns, other monsters will stop attacking the player.
-	*this is subject to change as monster AI and hositility settings change. Keep an eye out for this bug.
+	*this is subject to change as monster AI and hostility settings change. Keep an eye out for this bug.
 
 have observed a stack overflow error when trying to pick up an item stack. not sure why. It seemed to happen when I had 85 arrows and tried to pick up 15, which makes me think it has to do with hitting the stack cap exactly.
 
