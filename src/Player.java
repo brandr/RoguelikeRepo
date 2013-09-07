@@ -6,6 +6,7 @@ public class Player extends Monster{
 	public static final String PLAYER_COLOR="931D1D";
 	
 	public static final String[] BURDEN_STATES={"","burdened","strained","overtaxed"};
+	public static final String[] HUNGER_STATES={"starving", "near starving", "very hungry", "hungry", "", "satiated", "engorged"}; 
 	
 	
 	public Player() {
@@ -45,6 +46,7 @@ public class Player extends Monster{
 		info+="MP: "+showMagicPoints()+"\n";
 		info+="Armor: "+armorRating()+"\n";
 		info+=burdenState();
+		info+=hungerState();
 		return info;
 	}
 	
@@ -84,6 +86,7 @@ public class Player extends Monster{
 		if(stunCountDown>0)		//cannot stun repeatedly with STR-based stuns.
 			stunCountDown--;
 		regenStep();
+		hungerStep();
 		
 		currentLevel.startTurnCounter();
 		if(currentLevel.monsterGenerator!=null)	//TODO: this should be in some sort of tick method for turnCounter or Level.
@@ -751,29 +754,61 @@ public class Player extends Monster{
 	
 	//hunger methods
 	
-	private void setHungerPoints(int points){
-		if(points>0){
-			hungerPoints[0]=points;
-			hungerPoints[1]=points;
-		}
+	//hunger methods
+
+	private void hungerStep() {
+	if (currentHp()>0){
+		decrementHungerPoints();
 	}
-	
-	public void gainHungerPoints(int points){
-		if(points>0){
-			hungerPoints[0]=Math.min(hungerPoints[0]+points,hungerPoints[1]);		//TODO: do fullness checks and have fullness consequences where necessary.
-		}
+}	
+
+public String hungerState(){
+	int hunger=hungerPoints[0];
+	int index=0;
+	while(index<HUNGER_STATES.length-1){
+		if(hunger<hungerThresholds()[index])
+			return HUNGER_STATES[index];
+		index++;
 	}
+	return HUNGER_STATES[HUNGER_STATES.length-1];
+}
+
+public int[] hungerThresholds(){
+	int[] thresholds=new int [HUNGER_STATES.length-1];
+	thresholds[0]= (int) (hungerPoints[1]*0);
+	thresholds[1]= (int) (hungerPoints[1]*.2);
+	thresholds[2]= (int) (hungerPoints[1]*.4);
+	thresholds[3]= (int) (hungerPoints[1]*.6);
+	thresholds[4]= (int) (hungerPoints[1]*.7);
+	thresholds[5]= (int) (hungerPoints[1]*.8);
+	return thresholds;
+}
 	
+private void setHungerPoints(int points){
+	if(points>0){
+		hungerPoints[0]=points;
+		hungerPoints[1]=points;
+	}
+}
+
+public void gainHungerPoints(int points){
+	if(points>0){
+		hungerPoints[0]=Math.min(hungerPoints[0]+points,hungerPoints[1]);		//TODO: do fullness checks and have fullness consequences where necessary.
+	}
+}
+
 	private void decrementHungerPoints(){		//TODO: figure out how starvation works here. determine proper thresholds.
+		System.out.println(hungerPoints[0]);
 		if (hungerPoints[0]>0)
-			hungerPoints[0]--;
-		//System.out.println(hungerPoints[0]);	//uncomment to help test hunger.
-	}
-	
-	public boolean full(){
-		return hungerPoints[0]==hungerPoints[1];
-	}
-	
+		hungerPoints[0]--;
+	if (hungerPoints[0]<=0)
+		takeDamage(3, null, null);
+	//uncomment to help test hunger.
+}
+
+public boolean full(){
+	return hungerPoints[0]==hungerPoints[1];
+}
 	//identification-related methods
 	
 	public void identifyAllItems(){
