@@ -4,6 +4,8 @@
  * 
 TODO category: bugs that need fixing
 
+game has crashed upon player trying to pick up ammo. Try to figure out why by testing with different ammo amounts/types.
+
 if a room is completely filled with monsters(and items, possibly) and the game tries to spawn a monster (or item) there, it crashes.
 	*NOTE: this seems to be becoming more common as I add more generation methods. (might be confirmation bias though.)
 	*this probably also happens if the whole level is full.
@@ -29,6 +31,10 @@ TODO category: current goals
 		will need to do to complete the task. You can also add new tasks to this section if you think
 		they should be here.
 
+finish chasing AI (Robert)
+	*Sounds?
+	*Fix that one part of the AI state where the monster picks a planned tile nonrandomly (should be random)+
+
 Consider making a Mind class to store a monster's knowledge, behavior patterns, etc
 
 set up materials so that there cannot be cloth weapons, rocks made of anything other
@@ -39,12 +45,9 @@ set up materials so that there cannot be cloth weapons, rocks made of anything o
 set up food/hunger penalties (done by Nick, but he needs to push again.)
 
 fix turn structure (Robert)
-	*implemented, but may be wonky. also need to test monsters with varying turn delays.
-		*Make an unintelligent "slime" monster
 	*need to make sure this works well with potions, although that won't be much of an issue until potions are fully implemented.
-	*If the player and a monster have the same turn delay, the player moves first. (We think)
-	*This new system will affect monster/player speed, status effect durations (like stuns), message order, etc.
-	*Once it is implemented, test the system using a very slow monster (like a slime)
+	*If the player and a monster have the same turn delay, does the player moves first? should this be the case?
+	*This new system will affect monster/player speed, status effect durations (like stuns), message order, etc so test a lot.
 
 add burdening penalties (UNCLAIMED)
 	*will involve turn delay
@@ -72,9 +75,8 @@ massive monster/item spawning overhaul (Robert)
 	*also consider making the check for whether an item/monster belongs in a branch somewhat more efficient and organized.
 	*inventory creation (random monster items, gold, varying "layouts", etc.)
 		*the final creation should happen upon a monster's placement on a level, but should somehow be constrained before this point.
-	*AI types (just add an "unintelligent" one for testing)
 	*slightly better chasing AI	
-		*if the player is close enough and physically reachable, the monster can "see" no matter what (by hearing?)
+		*if the player is close enough, the monster can "see" no matter what (by hearing?)
 		*make monsters guess which way the player went, avoiding backtracking
 	*item seeking? (might branch too much into more complex AI)
 	*consider changing class hierachy to Monster>Humanoid> Player

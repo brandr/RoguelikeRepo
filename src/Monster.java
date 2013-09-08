@@ -1202,8 +1202,12 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		}
 		
 		protected void changeCurrentMessage(String message, Tile sourceTile,boolean overwrite){	//overwrite only overwrites if this monster is the player.
-			if(getClass().equals(Player.class)&&overwrite)
-				setCurrentMessage(message);
+			if(getClass().equals(Player.class)&&overwrite){
+				if(name.equals("Ben"))	//TODO: scramble each word, leaving first and last letters intact.
+					setCurrentMessage("shteouhtu,.shpnab.npst,b,.p,ahsn");
+				else
+					setCurrentMessage(message);
+			}
 			else if(playerInView())
 				appendToCurrentMessage(message);	
 			//only append if player is in monster's view. 
@@ -1212,7 +1216,7 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 			//	then checking to see if this monster is in the player's view.
 		}
 
-		protected void setCurrentMessage(String message) {	
+		protected void setCurrentMessage(String message) {	//TODO:
 			RogueLikeGui.currentMessage=message;
 		}
 		

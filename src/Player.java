@@ -18,7 +18,7 @@ public class Player extends Monster{
 	}
 	
 	public Player(String name) {
-		this.name = name;		
+		this.name = name;
 		enemyMonsters=null;
 		setIcon(PLAYER_ICON);
 		this.color=PLAYER_COLOR;
