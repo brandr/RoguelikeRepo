@@ -10,6 +10,12 @@ public class FOV {	//field of view. belongs to players and monsters.
 		canSee= tilesVisibleBooleans();//this can be used for testing, making everything on the screen visible
 	}
 	
+	public boolean canSee(Tile tile){
+		if(level().containsTile(tile))
+			return canSee[tile.xCoord][tile.yCoord];
+		return false;
+	}
+	
 	public char getTileIcon(int xPos, int yPos) {
 		if(level().containsTile(xPos,yPos)){
 			Tile tile=level().getTile(xPos, yPos);

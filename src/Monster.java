@@ -169,6 +169,10 @@ public class Monster extends Entity{
 		AIstate.decideMove();
 	}
 
+	public boolean canSee(Tile tile){
+		return fov.canSee(tile);
+	}
+	
 	public void detectAdjacentMonster(){	//see if there is a monster in adjacent squares
 		for(int i=-1;i<2;i++){
 			for(int j=-1;j<2;j++){
@@ -522,8 +526,8 @@ public class Monster extends Entity{
 		if(possibleDoor.getClass()==Door.class&&!possibleDoor.containsMonster()&&possibleDoor.isVisible)
 			openDoor((Door)Movement.tileInDirection(this,direction));
 		
-		else if(getClass()==Player.class){
-			if(possibleDoor.getClass()==Door.class&&possibleDoor.isVisible)
+		else if(getClass().equals(Player.class)){
+			if(possibleDoor.getClass().equals(Door.class)&&possibleDoor.isVisible)
 				changeCurrentMessage("The door is blocked.",currentTile,true);		//not sure when this should come up.
 			else
 				changeCurrentMessage("You see no door there.",currentTile,true);

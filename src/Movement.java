@@ -206,6 +206,19 @@ public class Movement {	//contains many of the movement functions. TODO: transfe
 	
 	//tiles
 	
+	public static Tile[] adjacentTiles(Level level,Tile centerTile){	//TODO: test this by making a "search" method for the player to use.
+		Tile[] tiles=new Tile[10];
+		int index=0;
+		for(int i=1;i<tiles.length;i++){
+			char direction=Character.forDigit(i, 10);
+			if(tileInDirection(level,centerTile,direction)!=null&&i!=5){
+				tiles[index]=tileInDirection(level,centerTile,direction);
+				index++;
+			}
+		}
+		return tiles;
+	}
+	
 	public static Tile[] adjacentTiles(Monster monster){	//TODO: test this by making a "search" method for the player to use.
 		Tile[] tiles=new Tile[10];
 		int index=0;
