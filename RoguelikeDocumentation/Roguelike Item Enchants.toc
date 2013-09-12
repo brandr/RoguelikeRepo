@@ -1,0 +1,10 @@
+\contentsline {section}{\numberline {1}Previous Use}{1}
+\contentsline {subsection}{\numberline {1.1}Nethack}{2}
+\contentsline {subsection}{\numberline {1.2}ADOM}{2}
+\contentsline {subsection}{\numberline {1.3}Crawl}{2}
+\contentsline {section}{\numberline {2}Tactics}{3}
+\contentsline {section}{\numberline {3}Strategy}{3}
+\contentsline {section}{\numberline {4}What I would like to do}{4}
+\contentsline {subsection}{\numberline {4.1}Item Characteristics}{4}
+\contentsline {subsection}{\numberline {4.2}BUC}{5}
+\contentsline {subsection}{\numberline {4.3}Generation}{5}

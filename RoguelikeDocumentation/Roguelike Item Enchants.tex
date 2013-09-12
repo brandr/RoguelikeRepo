@@ -1,0 +1,63 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+\title{Roguelike Item Enchanting}
+\author{Nick Fusaro}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\begin{abstract}
+Item enchanting is an old standby in roguelike games, for good reason. Item enchants and specialized weapon brands add to gameplay experience in myriad ways, all of which already match the roguelike experience to a great degree. They allow for greater randomization of player experience, provide an additional way to give the player a momentary advantage or prepare him for the endgame (while providing a barometer for whether or not he is ready to enter said endgame), and allow the player to enact his strategy and tactics in a different domain than previously. This section deals primarily with weapon and armor enchantments, especially when detailing what I would like to implement.
+\end{abstract}
+
+
+\section{Previous Use}
+Item enchanting, and specific unrandom magic items were probably used to the greatest amount of success in Nethack and ADOM, and for reasons that were way different. Let's take a second to examine two or three game where this mechanic was used to great effect.
+
+\subsection{Nethack} Nethack, with its vast ability to be completely exploited by a player that wanted to, had a narrow, specifically-defined list of requirements for its 'ascension kit' (the common community term for endgame equipment). Cloak of magic resistance. Oilskin cloak. Blessed, greased, +7 silver dragon scale mail. Gauntlets of power. Gauntlets of dexterity. Shield of reflection. Amulet of life saving. Many of these items had to be wished for, and some could only be found in certain areas. The important thing to remember, is that although I like to look way down my nose at Nethack, this is probably the first time that items were this complex and this cool. You could find that shield of reflection on DL3 for the very first time and be completely amazed when it bounced a bolt of fire back at the lich that attacked you. It felt amazing! The other thing to criticize about it were that Nethack characters, with the notable exception of monks, were fundamentally convergent. As the game progressed, wizards got strong enough and good enough at casting to wear heavy armor anyway, and fighters picked up the rudiments of magic. 
+\subsection{ADOM} ADOM was different, although some things were similar. Both ADOM and Nethack had unrandom, wishable items. The difference is that you could usually go and get these items in ADOM, and there were a few themed branches that you had to dive into to obtain the lategame item at the bottom of it. It also generated out-of-depth boss monsters if it happened to drop an especially strong item in an ordinary dungeon. The items necessary for each class were also wildly different, sometimes even carrying penalties for use against their intended strategy, though there were definitely a few standbys, such as the seven-league boots. ADOM also had a pretty complex armor system. Armor had (w, x), [y, z], which modified respectively melee attacks, ranged attacks, dodging, and armor value. ADOM did not offer item enchanting, although it did had a rather inaccessible skill that would let you smith items to improve them. Rather than a quest to buff up easily obtainable items, ADOM was frequently a quest to obtain the unique items themselves. 
+\subsection{Crawl} Since Crawl is my favorite roguelike, it's going to get the longest paragraph, so bear with me. If you play a lot of it, you'll notice its influence on the things that I want for this roguelike as well. Crawl has a crazy-innovative randomized artifact system that will spit out uncommon, highly-differing artifact types that purposefully have \textit{no intended use}. This way, the game doesn't necessarily get bogged down in interclass balance, because sometimes you'll find the perfect item for a berserker as a berserker. Other times you'll find it as a wizard, and then due to their skilling system be able to slowly transfer to a full fighter. The most interesting thing that this fixed from a game experience perspective is that it altered weapons from a resource used by the player to something for the player to react to and incorporate into his strategy. It comes close to being a type of environmental factor.
+
+\section{Tactics}
+Items extend tactics, both in the java sense and the more ordinary way. THe implementation of items into the game gives the player greater leeway to enforce his will upon the game world (I thought I would ubermention), and the addition of each item adds its own resource or option (way of consuming a resource).  The most obvious 'tactical' items to examine are probably consumable magic items such as wands, potions, and scrolls. Their limited usage of powerful magical effects allows the player to apply them situationally and only at specific times of great need. If we make them alter the game environment as intuitively as possible, the player will even be able to apply them in ways that we haven't even seen before.
+
+\section{Strategy} 
+Scrolls of acquirement/enchant weapon/enchant armor and random/unrandom artifacts provide a way to extend the tactics of player survival into the late game. Instead of making the turn-to-turn decisions of "what do I equip?", "what do I invoke?", and "can I stay in?" the player, when granted the opportunity to upgrade or acquire a specific item, is forced to answer and ask questions about his greater vision for the character, and what he feels will both enable him to survive in the short term and grow stronger in the long term. By giving the player more input with how the character is formed over the course of the game, you can foster a greater attachment to the character moving through the midgame (which will make them cry when we ultimately kill their character in dumb ways). BUT I DIGRESS: Let's say each weapon has three attributes: item slot, damage, and player skill with said weapon. The player has a choice between a high-damage, two-handed weapon he is skilled with, a low-damage, one-handed weapon he is skilled with, and a high-damage, one-handed weapon he is unskilled with. The player would like to keep his free hand open to use a shield, while doing as much damage as possible. Does he try to build up skill with the new weapon, settle for the low-damage weapon and trust in his skill to enable him to do damage with it, or forgo the shield entirely and wield the two-hander? This way, weapons with a comparatively small amount of attributes can generate huge amounts of thought around gameplay. How do we extend into magic? What if each item has its own set of bonuses to tohit and damage, as well as its own brand that will do damage under specific conditions? What if it has a material modifier that the player can see? The options stack up sort of fast, and a weapon or item with only 5 to 7 characteristics can create a lot of situationally useful items that can be used by players in ways that won't even occur to us.
+
+\section{What I would like to do}
+I would like to have a solid system in place for weapon and armor enchanting. This might necessitate a certain amount of overhauling, especially weapon power and quality, but it is Probably Worth It and won't have to be done immediately.
+
+\subsection{Item Characteristics}
+Items should have attributes as follows:
+\begin{itemize}
+  \item Power, or base damage. This is roughly a measure of how heavy and sharp an item is. This has no effect on tohit (though high-power items tend to be low-tohit ones), but changes the damage of an item based on this number and the relevant stat. Item quality has minimal effect on this variable.
+  \item Accuracy. This is how easy a weapon is to hit with. Generally high for light weapons and low for heavy ones, but item quality has a pretty high effect on it. 
+  \item Speed. How fast can you swing it? How fast can you shoot it?
+  \item Quality. How well-made a weapon is. Affects weapon accuracy, speed, ammo durability. How aerodynamic is it? Is it light but still durable?
+  \item Material. Affects weapon speed, power, ammo durability. How light is it? How hard/heavy is it?
+  \item Enchantment. Is a flat, integer bonus to either power or accuracy. Displayed next to an identified weapon as (+x, +y). 
+  \item Brand. A property that each weapon only has one of that adds an extra effect to weapon attacks, or alters the values of the weapon outside of stuff that would normally generate. Brands are usually named by the "of <brand>" format. A sword of flaming might add 1d6 fire damage on a successful attack, and a pike of speed might have more guaranteed double attacks.
+  \item Artifactness. An artifact weapon is ascribed more properties than a weapon would usually be able to have, such as allowing its user to resist cold or fire, go invisible, act as though he posessed a certain class ability, or what-have-you. Artifact weapons are rare but not necessarily good. You should probably see one or two every 10-20 dungeon levels. They cannot be destroyed or altered by any means, and there are both random and unrandom artifacts. 
+  \item Naming. A fully-identified weapon with all of the properties that isn't an artifact would be described as "a <quality level> (+x, +y) <BUC status> <material> <weapon type> of <brand>." An artifact weapon would be described as "<artifact name>, the <quality level> (+x, +y) <BUC status> <material> <weapon type>. \{property list\}
+\end{itemize}
+
+\subsection{BUC}
+Although I guess this would more properly go in the property list, I want equipment only to have these statuses, and to not have a blessed status. This is because cursing eqipment makes folks be more cautious about the stuff that they equip, but cursing/blessing magic items such as potions and scrolls, which are basically tools with predictable effects, pisses folks (or just me) the fuck off. Imagine if your hammer up and decided it was a screwdriver, until you poured water on it at which point it turned into an electric drill. Blessing also does not particularly make sense for equipment, because we already have umpty-billion ways to enhance equipment. 
+
+\subsection{Generation}
+Equipment generation is tricky. I'd like to see unrandom artifacts in the same places each game, or at the very least being surrounded by the same type of vaults or gifted by the same gods. That way they can be either metagame or quest objectives. Random artifacts should spawn...randomly, with no regard for branch weapons, common materials, or whether or not you want "TPKEK", the poorly-made (-5, -6) cursed bone spear \{-HPMAX, -AC, -EV\}. But as for the ordinary, working-man enchanted weapon on the street? Here is my idea, presented thoughtfully as an itemized list.
+
+\begin{itemize}
+ \item This method is going to need to know the branch the character is in, the character's dungeon level, the character's luck, and the monsters that are spawning on the level.
+  \item The general process is going to be like this. First, the process checks to see if a randart is made on the level, then checks that x or y weapon/armor is made, then checks to see what it's made of, how well-made it is, whether it will be enchanted, checks to see if it will have a brand, and then dumps it to the level.
+  \item Probabilities of each step happening will be adjusted based on the dungeon level, the player's luck, and the branch the player is currently in. Unfortunately, since I don't have any branch ideas, I have no idea which branch should affect what.
+  \item Although finding a ridiculous, late-game weapon should at points be exceedingly UNLIKELY, it should never be completely IMPOSSIBLE. Tailing things off in a kind of skewed Z-distribution is probably going to be the rule of the day.
+  \item Things that commonly spawn equipped to monsters should be adjusted in a similar way. This way that orc can spawn with a +6 wood club of crushing, but he probably won't. The elf mage on D:20 however, is virtually guaranteed some kind of murderscimitar that you are hopefully by now equipped to deal with.
+\end{itemize}
+
+\end{document}
