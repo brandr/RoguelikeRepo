@@ -7,9 +7,53 @@ public class AIState {
 	public final static String HUNTING="hunting";	//searching for a monster that has disappeared from view.
 	public final static String IDLE="idle";		//wandering around.
 
+	public static final String UNINTELLIGENT="unintelligent";
+	public static final String INTELLIGENT="intelligent";
+	
+	public static final String[] MONSTER_INTELLIGENCES={UNINTELLIGENT,INTELLIGENT};
+	
 	public AIState(String state, Monster monster){
 		this.monster=monster;
 		this.state=state;
+	}
+	
+	/*public AIState(AIState AIstate) {	//is this necessary?
+		monster=AIstate.monster;
+		intelligence=AIstate.intelligence;
+		state=AIstate.state;
+	}*/
+
+	public void decideMove() {
+		if(monster.confused()){
+			monster.moveRandom();
+			return;
+		}
+		switch(intelligence){
+		case(INTELLIGENT):
+			intelligentDecideMove();
+			break;
+		case(UNINTELLIGENT):
+			unintelligentDecideMove();
+			break;
+		}
+	}
+	
+	private void intelligentDecideMove() {	//actions are listed in order of priority.
+		Monster target=nearestEnemy();
+		if(target!=null){				//FIRST PRIORITY: pursue the target if it can be seen.
+			switchStates(PURSUIT);
+			targetTile=new Tile(target.currentTile);
+			//saveMove();
+			monster.moveTowards(target);
+		}
+			
+		else{
+			targetLostResponse();
+			}
+	}
+
+	private void unintelligentDecideMove() {	//TODO: this is a little *too* unintelligent.
+		wander();
 	}
 	
 	public void switchStates(String state){
@@ -20,15 +64,15 @@ public class AIState {
 		return monster.getCurrentLevel();
 	}
 	
-	private void targetLostResponse(){	//TODO: make this more streamlined and clear. Figure out a good monster action cycle before coding more.
+	private void targetLostResponse(){	//TODO: make this more streamlined and clear.
+		//Figure out a good monster action cycle before coding more.
+		//or maybe a hierarchy of priorities rather than a cycle?
 		switch(state){
 		case(PURSUIT):
 			state=HUNTING;
 			Tile[] targetChoices=adjacentUnseenTiles(level(),targetTile);
 			if(targetChoices[0]==null)
 				state=IDLE;
-			else
-				plannedPath[0]=targetChoices[0];//TODO: choose planned path more randomly.
 			targetLostResponse();
 			break;
 		case(HUNTING):	//TODO: after reaching target tile, guess a new target tile, up to a point. (define what that point is) Eventually resume wandering.
@@ -38,8 +82,8 @@ public class AIState {
 					monster.moveTowards(targetTile);
 				}
 				else{
-					if(!monster.currentTile.equalTo(plannedPath[0]))
-						monster.moveTowards(plannedPath[0]);
+					//if(!monster.currentTile.equalTo(plannedPath[0]))
+					//	monster.moveTowards(plannedPath[0]);
 					state=IDLE;
 					return;
 				}
@@ -68,27 +112,10 @@ public class AIState {
 		}
 		return unseenTiles;
 	}
-
-	public void decideMove() {
-		Monster target=nearestEnemy();
-		if(target==null)
-			targetLostResponse();
-		else{
-			switchStates(PURSUIT);
-			targetTile=new Tile(target.currentTile);
-			saveMove();
-			monster.moveTowards(target);
-		}
-	}
 	
 	private void wander(){	//choose an empty, adjacent tile to move into.
-		Tile[] choices=monster.adjacentEmptyTiles();
-		int randomIndex=dice.nextInt(choices.length);
-		while(choices[randomIndex]==null){
-			randomIndex=dice.nextInt(choices.length);
-		}
+		monster.moveRandom();
 		saveMove();
-		monster.moveTowards(choices[randomIndex]);
 	}
 	
 	private Monster nearestEnemy(){
@@ -96,7 +123,7 @@ public class AIState {
 	}
 	
 	private Monster determineClosest(Monster[] availableMonsters) {
-		if(availableMonsters[0]==null)
+		if(availableMonsters==null||availableMonsters[0]==null)
 			return null;
 		Monster closestMonster=availableMonsters[0];
 		int index=0;
@@ -114,16 +141,30 @@ public class AIState {
 				Math.abs(monster.getYPos()-otherMonster.getYPos()));
 	}
 	
+	//sound methods
+	
+	public void focusSound(Monster source, Sound sound) {	//consider making separate methods for dealing with sounds that don't come from monsters.
+		targetTile=source.currentTile;
+		state=HUNTING;
+	}
+	
 	private void saveMove(){	//saves monster's current tile location before moving
 		previousTile=monster.currentTile;
 	}
-
+	
+	public String getIntelligence() {
+		return intelligence;
+	}	
+	
+	public void setIntelligence(String intelligence) {
+		this.intelligence=intelligence;
+	}
+	
+	private String intelligence=INTELLIGENT;
 	private String state;
 	private Monster monster;
 	private Tile targetTile=null;
 	private Tile previousTile;
-	private Tile[] plannedPath=new Tile[20];
+	//private Tile[] plannedPath=new Tile[20];
 	private Random dice=new Random();
-	
-	
 }

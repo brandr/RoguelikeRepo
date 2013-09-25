@@ -174,7 +174,12 @@ public class ArmorReader extends ItemReader{
 	        							else if(event.isEndElement()){
 	        								switch(endElementName(event)){
 	        										case(ARTIFACT_ARMOR):
-	        										Armor addedArtifactArmor=new Armor(createArmor(slot, genericName, trueName, material));
+	        										Armor createArmor=createArmor(slot, genericName, trueName, material);
+	        										Armor addedArtifactArmor=null;
+	        										if(createArmor!=null)
+	        											addedArtifactArmor=new Armor(createArmor);
+	        										//else
+	        										//	System.out.println(slot);
 	        										if(armorValue>0)
 	        											addedArtifactArmor.setArmorValue(armorValue);	//is this right?
 	        										if(armorQuality>0)

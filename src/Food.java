@@ -5,7 +5,7 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 	public Food(String name, int hungerPoints){
 		genericName=name;
 		setHungerPoints(hungerPoints);
-		setEffect();
+		//setEffect();
 		setIcon(STANDARD_FOOD_ICON);
 	}
 
@@ -18,7 +18,7 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 		setStackSize(toCopy.getStackSize());
 		setAmount(toCopy.getAmount());
 		
-		effect=new Effect(toCopy.effect);
+		//effect=new Effect(toCopy.effect);
 		hungerPoints=toCopy.hungerPoints;
 		setIcon(toCopy.getIcon());
 	}
@@ -28,9 +28,9 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 		setAmount(1+dice.nextInt(getStackSize()));
 	}
 	
-	private void setEffect() {
+	/*private void setEffect() {
 		effect=new Effect("fill",Effect.RESTORE_FULLNESS,hungerPoints,0);		//TODO: make sure this is right
-	}
+	}*/
 
 	@Override
 	public boolean stackEquivalent(Item otherItem) {// TODO: food can stack, so determine how here.

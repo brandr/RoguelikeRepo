@@ -93,15 +93,19 @@ public class RogueLikeGui extends JFrame
 	MainScreenListener mainScreenL = new MainScreenListener();
 	InventoryScreenListener inventoryScreenL = new InventoryScreenListener();
 	ItemSelectListener itemSelectL = new ItemSelectListener();
+	//ItemSelectListener limitedItemSelectL = new LimitedItemSelectListener();
 	DirectionSelectListener directionSelectL = new DirectionSelectListener();
 	SpellSelectListener spellSelectL = new SpellSelectListener();
 	YNListener YNL=new YNListener();
+	UpDownListener upDownL=new UpDownListener();
 	EscapeListener escapeL=new EscapeListener();		//TODO: decide whether or not this should replace inventory screen listener.
 	
 	public static final int TICK_TIME = 200; //# of milliseconds each frame is shown during an animated event, like an object being thrown.
+	public static final String BLACK="000000";
 	
 	String itemType="Item";		//this will be used with the item select listener to determine what type of item is valid to select.
 	String itemAction="";		//this will set the action to be performed on the item shown in "itemType".
+	Effect itemEffect=null;
 	
 	static Death playerDeath;	//an object that handles the player's death
 	
@@ -174,8 +178,8 @@ private static void setStartConditions(){		//set items, monsters, etc. on the le
 		Level firstFloor=d.getLevel(1,1);		
 		firstFloor.addPlayer(player1);	
 		
-		player1.identifyAllItems();
 		player1.setPotionColors(d.dungeonPotionColors);	//TODO: make this method and have it set the potion colors to whatever they have been randomized to for this dungeon.
+		player1.identifyAllItems();	
 		
 		player1.spells=new Spell[100];	//spells must be reset at the beginning of each game.
 	    player1.learnSpell(new Spell("Magic Missile", Skill.EVOCATIONS,"missile",5, 0));//temporary for testing.
@@ -279,6 +283,7 @@ private void addComponentsToPane() {
        
        deathScreenArea.setPreferredSize(DEATH_DISPLAY_SIZE);		//might be able to set sizes faster using a for-loop, array, custom method, etc.
        
+      // ArmorReader.loadArmors();
        CharacterCreator.openCharacterCreationScreen();	//TODO: we want a start screen of some kind before the character creation screen.
  
   }
@@ -297,6 +302,12 @@ public void createProjectile(Monster caster, Spell missile, char direction, Tile
 	ProjectileWorker projectileMover=new ProjectileWorker(); 
 	projectileMover.setStartConditions(caster, missile, direction, startTile);
     projectileMover.execute();
+}
+
+public void flashTiles(TileList[] nextTileLists, char icon, String color) {
+	ProjectileWorker tileFlasher=new ProjectileWorker(); 
+	tileFlasher.setStartConditions(nextTileLists,icon,color);
+	tileFlasher.execute();
 }
     
 public static void wait (int milliseconds){
@@ -329,13 +340,20 @@ public static void wait (int milliseconds){
 		return;
 		}
 		mapDisplayArea.setText(mapDisplay());
-		actionDisplayArea.setText(currentMessage);
+		
+		actionDisplayArea.setText(getCurrentMessage());	//TODO: the benification happens here.
         infoDisplayColumn1.setText(player1.primaryInfoDisplay());	
 		infoDisplayColumn2.setText(player1.secondaryInfoDisplay());
 		infoDisplayColumn3.setText(player1.statsDisplay());
 		actionDisplayArea.setPreferredSize(ACTION_DISPLAY_SIZE);	
     }
 	
+	private static String getCurrentMessage() {
+		if(player1.name.equals("Ben"))
+			return Message.benifyMessage(currentMessage);
+		return currentMessage;
+	}
+
 	private static String mapDisplay() {
 		Level level=player1.currentLevel;
 		String levelDisplay ="<html><p style=\"font-size:9px\" " +
@@ -356,10 +374,15 @@ public static void wait (int milliseconds){
 						 &&!Tile.isEmptySpaceIcon(icon)){		//if there is a monster in the tile and the tile is visible to the player, use its color. (may use item colors in the future)
 						levelDisplay+="<span style=\"color:#"+currentTile.monster.color+"\">"+icon
 									+"<span style=\"color:#000000\">";
-					}else if(icon==' ')
+					}
+					else if(currentTile.color!=BLACK)
+						levelDisplay+="<span style=\"color:#"+currentTile.color+"\">"+icon
+						+"<span style=\"color:#000000\">";
+					else if(icon==' ')
 						levelDisplay+="&nbsp;";
 					else
-					levelDisplay+=icon;
+						levelDisplay+=icon;
+				
 				}
 				
 				levelDisplay+=("<br>");
@@ -556,10 +579,6 @@ private static class CharacterCreator{
 		JButton FORplus=new JButton("+"); FORplus.setFont(new Font("Times New Roman", Font.BOLD, 11));
 		JButton FORminus=new JButton("-"); FORminus.setFont(new Font("Times New Roman", Font.BOLD, 11));
 		
-		JLabel PERLabel =new JLabel("Perception:");		//perception
-		JButton PERplus=new JButton("+"); PERplus.setFont(new Font("Times New Roman", Font.BOLD, 11));
-		JButton PERminus=new JButton("-"); PERminus.setFont(new Font("Times New Roman", Font.BOLD, 11));
-		
 		JLabel WILLabel =new JLabel("Willpower:");		//willpower
 		JButton WILplus=new JButton("+"); WILplus.setFont(new Font("Times New Roman", Font.BOLD, 11));
 		JButton WILminus=new JButton("-"); WILminus.setFont(new Font("Times New Roman", Font.BOLD, 11));
@@ -592,7 +611,6 @@ private static class CharacterCreator{
 		setStatDisplaySizes(STRLabel, STRfield, STRplus, STRminus);
 		setStatDisplaySizes(DEXLabel, DEXfield, DEXplus, DEXminus);
 		setStatDisplaySizes(FORLabel, FORfield, FORplus, FORminus);
-		setStatDisplaySizes(PERLabel, PERfield, PERplus, PERminus);
 		setStatDisplaySizes(WILLabel, WILfield, WILplus, WILminus);
 		setStatDisplaySizes(INTLabel, INTfield, INTplus, INTminus);
 		setStatDisplaySizes(LCKLabel, LCKfield, LCKplus, LCKminus);
@@ -626,10 +644,9 @@ private static class CharacterCreator{
 		setStatDisplayConstraints(contentPane, 0, springLayout, STRLabel, STRfield, STRminus, STRplus);
 		setStatDisplayConstraints(contentPane, 1, springLayout, DEXLabel, DEXfield, DEXminus, DEXplus);
 		setStatDisplayConstraints(contentPane, 2, springLayout, FORLabel, FORfield, FORminus, FORplus);
-		setStatDisplayConstraints(contentPane, 3, springLayout, PERLabel, PERfield, PERminus, PERplus);
-		setStatDisplayConstraints(contentPane, 4, springLayout, WILLabel, WILfield, WILminus, WILplus);
-		setStatDisplayConstraints(contentPane, 5, springLayout, INTLabel, INTfield, INTminus, INTplus);
-		setStatDisplayConstraints(contentPane, 6, springLayout, LCKLabel, LCKfield, LCKminus, LCKplus);
+		setStatDisplayConstraints(contentPane, 3, springLayout, WILLabel, WILfield, WILminus, WILplus);
+		setStatDisplayConstraints(contentPane, 4, springLayout, INTLabel, INTfield, INTminus, INTplus);
+		setStatDisplayConstraints(contentPane, 5, springLayout, LCKLabel, LCKfield, LCKminus, LCKplus);
 		
 		titleLabel.setBorder(BorderFactory.createLineBorder(Color.black));
 	
@@ -644,7 +661,6 @@ private static class CharacterCreator{
 		addStatAdjustListeners(STRminus, STRplus, STRfield, statsRemainingLabel);
 		addStatAdjustListeners(DEXminus, DEXplus, DEXfield, statsRemainingLabel);
 		addStatAdjustListeners(FORminus, FORplus, FORfield, statsRemainingLabel);
-		addStatAdjustListeners(PERminus, PERplus, PERfield, statsRemainingLabel);
 		addStatAdjustListeners(WILminus, WILplus, WILfield, statsRemainingLabel);
 		addStatAdjustListeners(INTminus, INTplus, INTfield, statsRemainingLabel);
 		addStatAdjustListeners(LCKminus, LCKplus, LCKfield, statsRemainingLabel);
@@ -658,7 +674,6 @@ private static class CharacterCreator{
         contentPane.add(STRLabel); contentPane.add(STRfield); contentPane.add(STRminus); contentPane.add(STRplus);
         contentPane.add(DEXLabel); contentPane.add(DEXfield); contentPane.add(DEXminus); contentPane.add(DEXplus);
         contentPane.add(FORLabel); contentPane.add(FORfield); contentPane.add(FORminus); contentPane.add(FORplus);
-        contentPane.add(PERLabel); contentPane.add(PERfield); contentPane.add(PERminus); contentPane.add(PERplus);
         contentPane.add(WILLabel); contentPane.add(WILfield); contentPane.add(WILminus); contentPane.add(WILplus);
         contentPane.add(INTLabel); contentPane.add(INTfield); contentPane.add(INTminus); contentPane.add(INTplus);
         contentPane.add(LCKLabel); contentPane.add(LCKfield); contentPane.add(LCKminus); contentPane.add(LCKplus);
@@ -830,7 +845,7 @@ private static class CharacterCreator{
 		public void attemptCharacterCreation(){
 			if(nameEntry.getText().trim().equals(""))
 				JOptionPane.showMessageDialog(frame, "Please enter a name.");
-			else if(raceOptions.getSelectedItem().toString()=="(Select race)"){
+			else if(raceOptions.getSelectedItem().toString().equals("(Select race)")){
 				JOptionPane.showMessageDialog(frame, "Please select a race.");
 			}
 			else if(startingPoints!=0){
@@ -870,8 +885,7 @@ private static class CharacterCreator{
 			String playerRace=raceOptions.getSelectedItem().toString();		//TODO: do race and class affect starting stats?
 			String playerClass=classOptions.getSelectedItem().toString();
 			int[] stats={Integer.parseInt(STRfield.getText()),Integer.parseInt(DEXfield.getText()),Integer.parseInt(FORfield.getText()),
-						Integer.parseInt(PERfield.getText()),Integer.parseInt(WILfield.getText()),Integer.parseInt(INTfield.getText()),
-						Integer.parseInt(LCKfield.getText())};
+						Integer.parseInt(WILfield.getText()),Integer.parseInt(INTfield.getText()),Integer.parseInt(LCKfield.getText())};
 			
 			player1=new Player(nameEntry.getText().trim());
 			player1.createCharacter(playerRace,playerClass,stats);
@@ -938,7 +952,7 @@ public class Death{		//exists to get around issues with static vs. nonstatic fun
 
 //all classes below here are keylisteners. (could potentially move them all into a separate file)
 
-private class MainScreenListener implements KeyListener{		//takes in key commands while on the main map screen.
+public class MainScreenListener implements KeyListener{		//takes in key commands while on the main map screen.
 
 		@Override
 		public void keyPressed(KeyEvent e) {
@@ -978,20 +992,18 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 				int keyCode=e.getKeyCode();
 				switch (keyCode){
 				case(KeyEvent.VK_UP):
-					player1.move('8');
-					player1.endPlayerTurn();
+					triggerPlayerMove('8');
 					return;
 				case(KeyEvent.VK_DOWN):
-					player1.move('2');
-        			player1.endPlayerTurn();
+					triggerPlayerMove('2');
+					//player1.move('2');
+        			//player1.endPlayerTurn();
         			return;
 				case(KeyEvent.VK_LEFT):
-        			player1.move('4');
-        			player1.endPlayerTurn();
+					triggerPlayerMove('4');
         			return;
 				case(KeyEvent.VK_RIGHT):
-					player1.move('6');
-        			player1.endPlayerTurn();
+					triggerPlayerMove('6');
         			return;
 				}
 			}
@@ -999,8 +1011,9 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 	        if (id == KeyEvent.KEY_TYPED) {	//the second condition is specific to the main screen.
 	            char c = e.getKeyChar();
 	            if(Character.isDigit(c)){
-	            	player1.move(c);
-	            	player1.endPlayerTurn();
+	            	triggerPlayerMove(c);
+	            	//player1.move(c);
+	            	//player1.endPlayerTurn();
 	            }
 	            else //if(Character.isLetter(c))
 	            	playerCommand(c);
@@ -1009,13 +1022,24 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 		//}
 	}
 		
+		private void triggerPlayerMove(char direction) {
+			if(player1.confused()){
+				player1.moveRandom();
+				return;
+			}
+			player1.move(direction);
+			player1.endPlayerTurn();
+		}
+
 		public void playerCommand(char keyPressed){	//there are many player commands. consider moving them to another class, and simply calling them with this method.
 			
 			itemType=Item.itemNameForLetterCommand(keyPressed);
 				//NOTE: whenever a new key command is added, add a corresponding one in (itemNameForLetterCommand) if appropriate.
 			switch(keyPressed){		//a lot of this is likely to be repeated for other screens
+				
+			//store commands that open other screens here.
 				case('i'):		//open inventory
-	    			getContentPane().removeAll();	//store commands that open other screens here.
+	    			getContentPane().removeAll();	
 	    			openInventoryScreen();
 	    			return;
 				case('?'):
@@ -1026,7 +1050,9 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 					getContentPane().removeAll();
 					openSkillScreen();
 					return;
-				case('.'):							//store commands that interact with tiles (or wait) here.
+					
+				//store commands that interact with tiles (or wait) here.
+				case('.'):							
 					currentMessage="";
 					player1.endPlayerTurn();
 					return;
@@ -1088,6 +1114,8 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 					break;		
 					}
 				break;
+				
+				//store item-related commands here.
 				case('I'):	//identify an item. (NOTE: this is temporary for testing. The player should not be able to identify any item at will in the final version.)
 					currentMessage= ("Identify which item?");
 					itemAction="Identify";
@@ -1098,10 +1126,10 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 					if(player1.inventory.isEmpty())
 						currentMessage= ("Nothing to throw.");
 					else{
-					currentMessage= ("Throw or shoot which item?");
-					itemAction="Throw";
-					showItemOptions('t');
-					selectItem();
+						currentMessage= ("Throw or shoot which item?");
+						itemAction="Throw";
+						showItemOptions('t');
+						selectItem();
 					}
 					break;
 				case('@'):		//toggle autopickup
@@ -1121,14 +1149,32 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 	    			showItemOptions('q');
     				selectItem();
 	    			break;
+	    		case('r'):		//read a scroll or spellbook
+	    			currentMessage= ("Read what?");
+	    			showItemOptions('r');
+    				selectItem();
+	    			break;
 	    		case('E'):		//Equip an item
 	    			currentMessage= ("Equip or unequip which item?");
 	    			showItemOptions('E');
 	    			selectItem();
 	    			break;
-	    		case('Z'):		//cast a spell								//store miscellaneous commands here. (might make more categories as more commands are added.)
+	    			
+	    		//store miscellaneous commands here. (might make more categories as more commands are added.)
+	    		case('y'):
+	    			if(player1.silenced())
+	    				currentMessage= ("You open your mouth to yell, but no sound escapes.");
+	    			else{
+	    				currentMessage= ("You let out a mighty yell!");
+	    				Sound yell=new Sound("a yell",8);
+	    				player1.currentLevel.addSound(yell, player1.currentTile);
+	    			}
+	    			break;
+	    		case('Z'):		//cast a spell								
 	    			if(!player1.knowsSpells())
 						currentMessage= ("You don't know any spells.");
+					else if(player1.silenced())
+						currentMessage="You can't speak to cast spells.";
 					else{
 					currentMessage= ("Cast which spell?");
 					showSpellOptions();
@@ -1176,6 +1222,55 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 			}
 		}
 		
+		public void showItemOptions(String constraint){
+			currentMessage+=getItemOptions(constraint);
+			/*Inventory itemSource=player1.inventory;
+			if(itemSource.getItemsOfType(itemType).isEmpty()){	//if there are no item options, say so instead of asking the player to choose an item.
+				currentMessage=Item.noOptionsMessage(itemType);			
+				return;
+			}
+			String []itemOptions=new String[itemSource.getItemCount()];
+			itemOptions=itemSource.showItemsWithConstraint(constraint,player1);
+			
+			if(itemOptions!=null&&itemOptions.length>0&&itemOptions[0]!=null){
+				currentMessage+=" (";
+				
+				currentMessage+=itemOptions[0];
+				int index=1;
+				while(index<itemOptions.length
+					&&itemOptions[index]!=null){
+					currentMessage+=", "+itemOptions[index];
+					index++;
+				}
+				currentMessage+=")";
+			}*/
+		}
+		
+		public String getItemOptions(String constraint){
+			Inventory itemSource=player1.inventory;
+			String options="";
+			if(itemSource.getItemsOfType(itemType).isEmpty()){	//if there are no item options, say so instead of asking the player to choose an item.
+				return "";			
+				//return "";
+			}
+			String []itemOptions=new String[itemSource.getItemCount()];
+			itemOptions=itemSource.showItemsWithConstraint(constraint,player1);
+			
+			if(itemOptions!=null&&itemOptions.length>0&&itemOptions[0]!=null){
+				options+=" (";
+				
+				options+=itemOptions[0];
+				int index=1;
+				while(index<itemOptions.length
+					&&itemOptions[index]!=null){
+					options+=", "+itemOptions[index];
+					index++;
+				}
+				options+=")";
+			}
+			return options;
+		}
+		
 		public void selectItem(){		//from the main screen, select an item to do something with.
 			mapDisplayArea.removeKeyListener(this);
 			mapDisplayArea.addKeyListener(itemSelectL);
@@ -1202,6 +1297,34 @@ private class MainScreenListener implements KeyListener{		//takes in key command
 			mapDisplayArea.removeKeyListener(this);
 			mapDisplayArea.addKeyListener(spellSelectL);
 		}
+		
+		public void promptLevelTeleport() {
+			currentMessage="A thunderous voice booms \"UP OR DOWN?\""
+			+ "\n(Press 'U' for up or 'D' for down.)";
+			upDownL.event="level teleport";
+			mapDisplayArea.removeKeyListener(this);
+			mapDisplayArea.addKeyListener(upDownL);
+		}
+
+		public void promptItemChoice(Effect effect, String constraint) {
+			//TODO: case for no valid targets. (should maybe be chosen sooner)
+		if(getItemOptions(constraint).equals(""))
+			currentMessage=Item.noConstrainedOptionsMessage(constraint);
+		else{
+			currentMessage="Choose an item.\n";
+			showItemOptions(constraint);
+			itemType="Item";
+			itemAction="Effect";
+			itemEffect=effect;
+			//selectItem();
+		}
+			//TODO: if a valid target is chosen, the effect happens to it.
+		}
+
+	/*	private void selectItemForEffect(Effect effect, Item[] itemTargets) {
+			// TODO Auto-generated method stub
+			
+		}*/
 	}
 //consider putting these action listeners in separate files to avoid a super long file
 private class InventoryScreenListener implements KeyListener{		//button commands on inventory screen
@@ -1291,11 +1414,14 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 				switch(itemType){
 				case("Item"):		//NOTE: as more actions are added, there may be multiple things to do with a single item type. I will either need to add more possibilities for this string, or make getters which return different item types (other methods dictate what actions are taken from there.)
 					switch(itemAction){
-					case("Drop"):
+					case("Drop"):		//maybe these cases should be final strings rather than these flimsy ones
 						dropItem(itemIndex);
 						break;
 					case("Drop multiple"):
 						dropMultipleItems(itemIndex);
+						break;
+					case("Effect"):
+						effectOnItem(itemIndex);
 						break;
 					case("Identify"):
 						identifyItem(itemIndex);
@@ -1311,14 +1437,17 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 						break;
 					}
 					break;
+				case("Equipment"):
+					equipItem(itemIndex);
+					break;
 				case("Food"):
 					eatItem(itemIndex);
 					break;
 				case("Potion"):
 					quaffItem(itemIndex);
 					break;
-				case("Equipment"):
-					equipItem(itemIndex);
+				case("Readable"):
+					readItem(itemIndex);
 					break;
 				default:
 					break;
@@ -1330,7 +1459,8 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 	private void dropItem(int itemIndex){
 		if(playerHasItem(itemIndex)){
 			Item item=player1.inventory.getItem(itemIndex);
-			if((item.getClass()==Weapon.class||item.getClass()==Armor.class)
+			if((item.getClass().equals(Weapon.class)||
+				item.getClass().equals(Armor.class))
 			&&(((Equipment)item).equipped)){
 				currentMessage="You can't drop that "+item.toString()+ " while it's equipped.";
 				returnToMainListener();
@@ -1375,6 +1505,12 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 					currentMessage="You don't have that many of that item.";
 			}
 		}
+		returnToMainListener();
+	}
+	
+	private void effectOnItem(int itemIndex) {
+		if(playerHasItem(itemIndex));
+			itemEffect.takeEffect(player1,player1.inventory.getItem(itemIndex));
 		returnToMainListener();
 	}
 	
@@ -1444,7 +1580,7 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 	private void quaffItem(int itemIndex) {	//TODO: figure out how to keep this as one class while still including consumable food.
 										// TODO: look for commonalities between consumeItem() and equipItem() so that some actions can be combined into one class.
 		if(playerHasItem(itemIndex)){	
-				if((player1.inventory.getItem(itemIndex)).getClass()==Potion.class){
+				if((player1.inventory.getItem(itemIndex)).getClass().equals(Potion.class)){
 				Potion quaffingPotion=(Potion) player1.inventory.getItem(itemIndex);
 				player1.quaff(quaffingPotion);
 				player1.endPlayerTurn();	//only end turn if an item was consumed.
@@ -1452,6 +1588,28 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 				else
 					currentMessage="You can't drink that "+player1.displayItemName(player1.inventory.getItem(itemIndex),false)+".";
 			}
+			returnToMainListener();
+	}
+	
+	private void readItem(int itemIndex){
+		boolean itemHasPrompt=false;
+		boolean itemHasGraphics=false;
+		if(playerHasItem(itemIndex)){	
+			if((player1.inventory.getItem(itemIndex)).getClass().equals(Spellbook.class)){
+				//TODO
+			}
+			else if((player1.inventory.getItem(itemIndex)).getClass().equals(Scroll.class))
+			{
+				Scroll readingScroll=(Scroll) player1.inventory.getItem(itemIndex);
+				itemHasPrompt=readingScroll.hasPrompt();
+				itemHasGraphics=readingScroll.hasGraphics();
+				player1.read(readingScroll);
+				player1.endPlayerTurn();	//only end turn if an item was consumed.
+				}
+			else
+				currentMessage="You can't read that "+player1.displayItemName(player1.inventory.getItem(itemIndex),false)+".";
+		}
+		if(!itemHasPrompt&&!itemHasGraphics)
 			returnToMainListener();
 	}
 
@@ -1477,6 +1635,28 @@ private class ItemSelectListener implements KeyListener{	//maybe this should be 
 	}
 	
 }
+
+/*private class ItemEffectListener implements KeyListener{
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+}*/
 
 private class DirectionSelectListener implements KeyListener{
 
@@ -1600,6 +1780,10 @@ private class SpellSelectListener implements KeyListener{
 				returnWithMessage("Not enough MP.");
 				return;
 			}
+			else if(player1.silenced()){
+				returnWithMessage("You can't speak to cast that spell.");
+				return;
+			}
 			
 			//at this point, the spell will almost definitely be cast.
 			
@@ -1622,21 +1806,109 @@ private class SpellSelectListener implements KeyListener{
 		selectDirection();	
 	}
 	
+	public void selectDirection(){ 
+		mapDisplayArea.removeKeyListener(this);
+		mapDisplayArea.addKeyListener(directionSelectL);
+	}
+	
 	private void returnWithMessage(String message){
 		returnToMainListener();
 		currentMessage=message;
 		refreshScreen();
 	}
 	
-	public void selectDirection(){ 
-		mapDisplayArea.removeKeyListener(this);
-		mapDisplayArea.addKeyListener(directionSelectL);
-	}
-	
 	private void returnToMainListener(){
 		refreshScreen();
         mapDisplayArea.removeKeyListener(this);
         mapDisplayArea.addKeyListener(mainScreenL);	
+	}
+}
+
+private class UpDownListener implements KeyListener{
+
+	String event="";
+	@Override
+	public void keyPressed(KeyEvent e) {
+		upDownEvent(e);
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		upDownEvent(e);
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		upDownEvent(e);
+	}
+	
+	private void upDownEvent(KeyEvent e) {
+		int id = e.getID();
+		if(id==KeyEvent.KEY_TYPED){
+		switch (e.getKeyChar()){
+		case('u'):
+			makeDecision('u');
+		break;
+		case('U'):
+			makeDecision('u');
+		break;
+		case('d'):
+			makeDecision('d');
+		break;
+		case('D'):
+			makeDecision('d');
+		break;
+			}
+		}
+	
+	}
+
+	private void makeDecision(char decision) {
+		switch(event){
+		case(""):	//no event
+			return;
+		case("level teleport"):
+			levelTeleportEvent(decision);
+		break;
+		default:
+			break;
+		}
+	}
+
+	private void levelTeleportEvent(char decision) {
+		Level startLevel=player1.currentLevel;
+		switch(decision){
+		case('u')://go up
+			int levelsUp=startLevel.randomLevelsUp(3);
+			if(levelsUp==0){
+				returnWithMessage("Nothing happened. Wonderful.");
+				return;
+			}
+			Level upDestination=startLevel.getBranch().getLevel(startLevel.floor-levelsUp);
+			player1.goToLevel(upDestination, upDestination.randomClearTile());
+			returnWithMessage("Going up.");
+		break;
+		case('d')://go down
+			int levelsDown=startLevel.randomLevelsDown(3);
+			if(levelsDown==0){
+				returnWithMessage("Nothing happened. Wonderful.");
+				return;
+			}
+			Level downDestination=startLevel.getBranch().getLevel(startLevel.floor+levelsDown);
+			player1.goToLevel(downDestination, downDestination.randomClearTile());
+			returnWithMessage("Going down.");
+		break;
+		default:
+			returnWithMessage("Nevermind.");
+			break;
+		}	
+	}
+	
+	private void returnWithMessage(String message){
+		//for some reason, the main screen listener does not need to be added again.
+		mapDisplayArea.removeKeyListener(this);
+		currentMessage=message;
+		refreshScreen();
 	}
 }
 
@@ -1758,6 +2030,8 @@ private class EscapeListener implements KeyListener{		//this only takes ESC as c
 	}	
 }
 
+
+
 private class ProjectileWorker extends SwingWorker<Object, Object>{
 
 	Monster thrower;
@@ -1766,6 +2040,10 @@ private class ProjectileWorker extends SwingWorker<Object, Object>{
 	Tile startTile;
 	
 	Spell missile=null; 	//null unless the projectile is actually a spell.
+	
+	TileList[] flashTiles=new TileList[1000];
+	char icon=0;
+	String color=BLACK;
 	
 	public void setStartConditions(Monster thrower, Item thrownItem, char direction,
 			Tile startTile) {
@@ -1776,6 +2054,10 @@ private class ProjectileWorker extends SwingWorker<Object, Object>{
 			//states whether a player threw an item, or a monster did. TODO: later, make sure monster throws display correctly.
 	}
 	
+	public void setStartConditions(TileList[] nextTileLists, char icon, String color) {
+		this.flashTiles=nextTileLists;	this.icon=icon; this.color=color;
+	}
+
 	public void setStartConditions(Monster caster, Spell missile,
 			char direction, Tile startTile) {
 		this.thrower=caster;
@@ -1790,6 +2072,8 @@ private class ProjectileWorker extends SwingWorker<Object, Object>{
 			excecuteThrow();
 		else if(missile!=null)
 			executeMissile();
+		else
+			executeFlashTiles(flashTiles, icon, color);
 		return null;
 	}
 
@@ -1848,7 +2132,6 @@ private class ProjectileWorker extends SwingWorker<Object, Object>{
 	private void executeMissile() {		//TODO: if possible/useful, make projectiles more general so this and throw are one method
 		currentMessage="";				//TODO: replace * with a getter for a spell icon.
 		char spellIcon=missile.getIcon();
-		//startTile.addItem(thrownItem);
     	while(Movement.tileInDirection(player1.currentLevel,startTile,direction).isPassable){
     		Tile nextTile=Movement.tileInDirection(player1.currentLevel,startTile,direction);
     		refreshScreen();
@@ -1873,11 +2156,52 @@ private class ProjectileWorker extends SwingWorker<Object, Object>{
     		missile.collide(thrower, endTile.monster);
     	}
     	refreshScreen();
-    	if(thrower.getClass()==Player.class){
+    	if(thrower.getClass().equals(Player.class)){
     		mapDisplayArea.addKeyListener(mainScreenL);
     		player1.endPlayerTurn();
     	}
     	startTile.displayIcon();
 	}
+	
+	private void executeFlashTiles(TileList[] flashTiles, char icon, String color) {
+		//mapDisplayArea.removeKeyListener(mainScreenL);
+		mapDisplayArea.removeKeyListener(itemSelectL);
+		currentMessage="";
+		
+		//TODO: flash each tileList in numerical order.
+		
+		for(int i=0;i<flashTiles.length&&flashTiles[i]!=null;i++){
+			TileList nextFlashTiles=flashTiles[i];
+			//refreshScreen();
+			mapDisplayArea.repaint();
+			for(int j=0;j<nextFlashTiles.length()&&nextFlashTiles.getTile(j)!=null;j++){
+				
+				nextFlashTiles.getTile(j).setIcon(icon);
+				nextFlashTiles.getTile(j).setColor(color);
+			}
+			
+			//mapDisplayArea.repaint();
+			RogueLikeGui.wait(TICK_TIME);
+			mapDisplayArea.repaint();
+			//refreshScreen();
+			
+			refreshScreen();
+			
+		}
+		
+		for(int i=0;i<flashTiles.length&&flashTiles[i]!=null;i++){
+			TileList nextFlashTiles=flashTiles[i];
+			for(int j=0;j<nextFlashTiles.length()&&nextFlashTiles.getTile(j)!=null;j++){
+				nextFlashTiles.getTile(j).displayIcon();
+				nextFlashTiles.getTile(j).resetColor();
+			}
+		}
+		mapDisplayArea.repaint();
+		refreshScreen();
+		mapDisplayArea.addKeyListener(mainScreenL);
+	}
 }
+
+
+
 }

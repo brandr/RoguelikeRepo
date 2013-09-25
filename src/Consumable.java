@@ -19,7 +19,7 @@ public abstract class Consumable extends Item{	//currently written assuming poti
 		this.genericName=name;
 		consumable=true;
 		//effect=new Effect(effectIndex);
-		effect.value=value;
+		//effect.value=value;
 		//setIcon(STANDARDCONSUMABLEICON);
 	}
 	
@@ -29,8 +29,12 @@ public abstract class Consumable extends Item{	//currently written assuming poti
 	
 	@Override
 	public void use(Monster target) {
-		effect.takeEffect(target);
+		getEffect().takeEffect(target);
 	}
 
-	protected Effect effect;	//both potions and food have effects.
+	public Effect getEffect() {
+		return null;
+	}
+
+	//protected Effect effect;	//both potions and food have effects.
 }

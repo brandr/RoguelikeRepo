@@ -1,3 +1,5 @@
+import java.util.Random;
+
 
 public class FOV {	//field of view. belongs to players and monsters.
 	
@@ -160,7 +162,7 @@ public class FOV {	//field of view. belongs to players and monsters.
 	}
 
 	private boolean[][] tilesCheckedBooleans() {	//same as tiles visible, but keeps track of tiles that have already been checked.
-		Level level=monster.getCurrentLevel();
+		Level level=level();
 		boolean[][] tilesVisible=new boolean[level.xSize+1][level.ySize+1];
 		for(int i=0;i<level.xSize;i++){
 			for(int j=0;j<level.ySize;j++){
@@ -168,6 +170,24 @@ public class FOV {	//field of view. belongs to players and monsters.
 			}
 		}
 		return tilesVisible;
+	}
+	
+	public void mapAllLevel() {	//NOTE: this doesn't apply to monsters. Then again, does it need to?
+		Level level=level();
+		for(int i=0;i<level.xSize;i++){
+			for(int j=0;j<level.ySize;j++){
+				level.mapTile(i, j);
+			}
+		}
+	}
+	
+	public void forgetMap() {
+		Level level=level();
+		for(int i=0;i<level.xSize;i++){
+			for(int j=0;j<level.ySize;j++){
+				level.unmapTile(i, j);
+			}
+		}
 	}
 
 	private boolean[][] tilesVisibleBooleans(){	//a special set of booleans used in determining FOV
@@ -185,9 +205,25 @@ public class FOV {	//field of view. belongs to players and monsters.
 		return monster.getCurrentLevel();
 	}
 	
+	public Tile[] visibleTiles(){
+		refreshFOV();	//not sure if this is necessary here. move it if it causes bugs or lag.
+		Tile[] tiles=new Tile[1000];
+		int index=0;
+		Level level=level();
+		for(int i=0;i<level.xSize;i++){
+			for(int j=0;j<level.ySize;j++){
+				if(canSee[i][j]){
+					tiles[index]=level.getTile(i,j);
+					index++;
+				}
+			}
+		}
+		return tiles;
+	}
+	
 	public Monster[] visibleMonsters() {
 		refreshFOV();	//not sure if this is necessary here. move it if it causes bugs or lag.
-		Monster[] monsters=new Monster[100];
+		Monster[] monsters=new Monster[1000];
 		int index=0;
 		for(int i=0;i<level().xSize;i++){
 			for(int j=0;j<level().ySize;j++){
@@ -217,7 +253,19 @@ public class FOV {	//field of view. belongs to players and monsters.
 		}
 		return false;
 	}
+	
+	public Tile randomEmptyTileInView() {
+		Tile[] tilesInView=visibleTiles();
+		int tileIndex=dice.nextInt(tilesInView.length);
+		while(tileIndex>tilesInView.length
+				||tilesInView[tileIndex]==null||!tilesInView[tileIndex].isEmpty()||
+				(tilesInView[tileIndex].xCoord==monster.currentTile.xCoord&&
+				tilesInView[tileIndex].yCoord==monster.currentTile.yCoord))
+			tileIndex=dice.nextInt(tilesInView.length);
+		return tilesInView[tileIndex];
+	}
 
+	private Random dice=new Random();
 	private Monster monster;
 	private boolean canSee[][];
 }

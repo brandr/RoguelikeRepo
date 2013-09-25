@@ -3,7 +3,7 @@ import java.util.Random;
 
 public abstract class Item {		//other classes should interface, not inherit (since effects/functionality may differ greatly)
 
-	public final static Class<?>[] ITEM_CLASSES={Ammo.class,Armor.class,Food.class,Potion.class,Weapon.class};
+	public final static Class<?>[] ITEM_CLASSES={Ammo.class,Armor.class,Food.class,Potion.class,Scroll.class,Spellbook.class,Weapon.class};
 	public final static int MAX_STACK_SIZE=99;
 	public final static char[] ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 	//constructors
@@ -29,7 +29,11 @@ public Item copyItem(Item toCopy){
 		case("Food"):
 			return new Food((Food)toCopy);		
 		case("Potion"):
-			return new Potion((Potion)toCopy);	
+			return new Potion((Potion)toCopy);
+		case("Scroll"):
+			return new Scroll((Scroll)toCopy);
+		case("Spellbook"):
+			return new Spellbook((Spellbook)toCopy);
 		case("Weapon"):
 			return new Weapon((Weapon)toCopy);	
 		default:	
@@ -86,7 +90,7 @@ public String trueName(){//TODO: override for every item type.
 	return name;
 }
 
-public String descriptiveName(int perception){	//TODO: override for every item type
+public String descriptiveName(){	//TODO: override for every item type
 	return name;
 }
 
@@ -252,10 +256,12 @@ public static String itemNameForLetterCommand(char letterCommand) {	//for use wi
 	//	return "Item";
 	//case(','):
 	//	return "Item";	//uncomment these if I want an error case for the default instead.
-	case('q'):		//can only drink potions
-		return "Potion";
 	case('e'):		//can only eat food
 		return "Food";
+	case('q'):		//can only drink potions
+		return "Potion";
+	case('r'):
+		return "Readable";
 	case('E'):		//can only equip equipment
 		return "Equipment";
 	default:
@@ -271,8 +277,29 @@ public static String noOptionsMessage(String itemType) {	//messages for when the
 		return "No potions to drink.";
 	case("Food"):		
 		return "Nothing to eat.";
+	case("Readable"):
+		return "Nothing to read.";
 	case("Equipment"):
 		return "No items can be equipped.";
+	default:
+		return "You can't do that.";	//this should be very rare, as far as I can tell. As more methods are implemented I may need to replace it with a more sophisticated message getter.
+	}
+}
+
+public static String noConstrainedOptionsMessage(String constraint) {	//this might replace the above method if things get too complicated
+	switch(constraint){
+	case(Targeting.UNIDENTIFIED):
+		return "All your items are already idenitfied.";
+	/*case("Item"):		//can only drink potions		//NOTE: don't delete this code block because it might be useful later.
+		return "No items in inventory.";	//may not always apply to inventory
+	case("Potion"):
+		return "No potions to drink.";
+	case("Food"):		
+		return "Nothing to eat.";
+	case("Readable"):
+		return "Nothing to read.";
+	case("Equipment"):
+//		return "No items can be equipped.";*/
 	default:
 		return "You can't do that.";	//this should be very rare, as far as I can tell. As more methods are implemented I may need to replace it with a more sophisticated message getter.
 	}
@@ -326,7 +353,7 @@ public void setWeight(double weight) {
 public boolean identified(){return identified;}
 
 public void identify(){identified=true;}
-
+public void unidentify() {identified=false;}	
 
 //throw methods
 

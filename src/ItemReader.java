@@ -117,7 +117,7 @@ public class ItemReader {
 	        		switch(elementName){	//TODO: wait until each item reading part definitely works before removing commented section.
 	        		case(POTIONS):
 	        			while(reader.hasNext()&&!(event.isEndElement()
-		        			&&event.asEndElement().getName().getLocalPart()==POTIONS)) {
+		        			&&event.asEndElement().getName().getLocalPart().equals(POTIONS))) {
 	        				event = reader.nextEvent();
 	        				if(event.isStartElement()){
 	        	        		switch(startElementName(event)){
@@ -230,9 +230,11 @@ public class ItemReader {
 		for(int i=branch.startDepth();i<branch.endDepth();i++){
 			Level currentLevel=branch.getLevel(i);
 			for(int j=0;j<colors.length;j++){
-				String potionType=Potion.POTION_NAMES[j];
-				currentLevel.addAvailableItem(new Potion(potionType,colors[j]
-						,getDefaultPotionValue(potionType,i),getDefaultPotionDuration(potionType,i),randomPotionCount()),0);		//0 is temporary for offset. adjust it as potions get "depths" or "overallValues"
+				String potionType=Potion.POTION_TYPES[j];
+				//TODO: ad potions one 
+				currentLevel.addAvailableItem(new Potion(potionType,colors[j]),0);
+				//currentLevel.addAvailableItem(new Potion(potionType,colors[j]
+				//		,getDefaultPotionValue(potionType,i),getDefaultPotionDuration(potionType,i),randomPotionCount()),0);		//0 is temporary for offset. adjust it as potions get "depths" or "overallValues"
 			}
 		}	
 	}
@@ -245,14 +247,12 @@ public class ItemReader {
 		switch(potionType){
 		case(Potion.HEALING):
 			return 5+(int)(depth/3.0)+ dice.nextInt((int)(depth/2.0)+2);	
-		case(Potion.PARALYSIS):
-			return 0;
+		//case(Potion.PARALYSIS):
+		//	return 0;
 		case(Potion.GAIN_ABILITY):	//in this case, "value" is the number of stats increased. (from 1-7)
 			return 1+dice.nextInt(7);
 		case(Potion.RAGE):
 			return 2+(int)(depth/10.5)+ dice.nextInt((int)(depth/6.5)+2);
-		case(Potion.HARM):		//harming potions are weaker than healing potions so as not to be overpowered.
-			return 3+(int)(depth/6.0)+ dice.nextInt((int)(depth/4.0)+2);
 		}
 		return 0;
 	}
@@ -262,14 +262,12 @@ public class ItemReader {
 		switch(potionType){
 		case(Potion.HEALING):
 			return 0;
-		case(Potion.PARALYSIS):
-			return 2+(int)(depth/9.0)+ dice.nextInt((int)(depth/6.0)+2);
+		//case(Potion.PARALYSIS):
+		//	return 2+(int)(depth/9.0)+ dice.nextInt((int)(depth/6.0)+2);
 		case(Potion.GAIN_ABILITY):
 			return 0;
 		case(Potion.RAGE):
 			return 4+(int)(depth/5.5)+ dice.nextInt((int)(depth/2.5)+2);
-		case(Potion.HARM):
-			return 0;
 		}
 		return 0;
 	}

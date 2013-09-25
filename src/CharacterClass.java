@@ -57,8 +57,43 @@ public class CharacterClass {
 			WeaponReader.createWeapon(Weapon.STAFF,"longstaff","Wizard's staff",Material.getMaterial("wood"),1)
 			,ArmorReader.createArmor(Equipment.HEAD,"cornuthaum","Wizard's cap",Material.getMaterial("cloth"))
 			,ArmorReader.createArmor(Equipment.CLOAK,"cloak","Magic cloak",Material.getMaterial("cloth"))//NOTE: the magic cloak is not actually magic.
-			,new Potion(Potion.HEALING,"",8,0,3)
-			,new Potion(Potion.HARM,"",4,0,5)};	//consider testing damage-over-time poison potions here.
+			
+			//healing/poison
+			,new Potion(Potion.CURING,"blue",null,9)		//bucha potions for testing
+			,new Potion(Potion.HEALING,"red",null,9)
+			,new Potion(Potion.RESTORATION,"green",null,9)
+			,new Potion(Potion.POISON,"yellow",null,9)
+			,new Potion(Potion.STRONG_POISON,"pee",null,9)
+			,new Potion(Potion.CHICKEN_SOUP,"poo",null,9)
+			
+			//ability-related
+			,new Potion(Potion.GAIN_ABILITY,"uuu",Player.INTELLIGENCE,9)
+			,new Potion(Potion.LOSE_ABILITY,"vvv",Player.WILLPOWER,9)
+			,new Potion(Potion.BOOST_ABILITY,"xxx",Player.DEXTERITY,9)
+			,new Potion(Potion.METAMORPHOSIS,"www",null,9)
+			,new Potion(Potion.GAIN_LEVEL,"www",null,9)
+			
+			//temporary boosts
+			,new Potion(Potion.HEROISM,"yyy",null,9)
+			,new Potion(Potion.RAGE,"yyy",null,9)
+			,new Potion(Potion.WIZARDRY,"zzz",null,9)
+			
+			,new Potion(Potion.CONFUSION,"a",null,9)
+			,new Potion(Potion.SILENCING,"b",null,9)
+		
+		/*	
+			,new Scroll(Scroll.TELEPORT,"AAA",9)		//lotsa scrolls for testing	(uncomment to test)
+			,new Scroll(Scroll.BLINKING,"BBBB",9)
+			,new Scroll(Scroll.DISPERSAL,"CCC",9)
+			,new Scroll(Scroll.GREATER_DISPERSAL,"DDD",9)
+			,new Scroll(Scroll.GREATER_TELEPORT,"EEE",9)
+			
+			,new Scroll(Scroll.IDENTIFY,"FFF",9)
+			,new Scroll(Scroll.MAPPING,"GGG",9)
+			,new Scroll(Scroll.AMNESIA,"HHH",9)
+			
+			,new Scroll(Scroll.IMMOLATION,"III",9)*/
+		};
 	
 	public static final String[] CLASSES={BARBARIAN,FIGHTER,ROGUE,WIZARD};
 	public static final Skill[][] CLASS_SKILLS={BARBARIAN_SKILLS,FIGHTER_SKILLS,ROGUE_SKILLS,WIZARD_SKILLS};

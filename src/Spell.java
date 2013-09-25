@@ -11,16 +11,6 @@ public class Spell {
 												new Spell("Healing", Skill.EVOCATIONS, "Self", 5, 0), 
 												new Spell("Teleport", Skill.EVOCATIONS, "Self", 5, 0)};
 
-	
-	
-	public Spell(){
-		//TODO
-	}
-	
-	/*public Spell(String name, String school){
-		this.name=name;
-		this.school=school;
-	}*/
 	public Spell(String name, String school, String castStyle, int MPCost, int poison){
 		this.name=name;
 		if(isValidSchool(school))
@@ -30,7 +20,7 @@ public class Spell {
 		}
 		this.castStyle=castStyle;
 		setMPCost(MPCost);
-		if(poison > 0){this.poison_missle = new Effect("Poison", Effect.DAMAGE, 5, 3);}//Set damage that we use for debugging
+		if(poison > 0){this.poisonMissle = new Effect("Poison", Effect.DAMAGE, 5, 3);}//Set damage that we use for debugging
 	}
 	
 	public static void setAllSpells()
@@ -39,8 +29,8 @@ public class Spell {
 		addSchools();
 		for(iterator = 0; iterator < all_spells.length; iterator++)
 		{
-			spell_map.put(all_spells[iterator].name, all_spells[iterator]);
-			school_to_spell_map.get(all_spells[iterator].school).add(all_spells[iterator].name);
+			spellMap.put(all_spells[iterator].name, all_spells[iterator]);
+			schoolToSpellMap.get(all_spells[iterator].school).add(all_spells[iterator].name);
 		}
 		return;
 	}
@@ -56,7 +46,7 @@ public class Spell {
 		for(iterator = 0; iterator < schools.length; iterator++)
 		{
 			LinkedList<String> emptyList = new LinkedList<String>();
-			school_to_spell_map.put(schools[iterator], emptyList);
+			schoolToSpellMap.put(schools[iterator], emptyList);
 		}
 	}
 	
@@ -76,7 +66,7 @@ public class Spell {
 	
 	public static Spell getSpell(String spell)
 	{
-		return spell_map.get(spell);
+		return spellMap.get(spell);
 	}
 
 	public String toString(){
@@ -108,7 +98,7 @@ public class Spell {
 	public void collide(Monster caster, Monster target) {		//a spell (which can only be a missile at this point) collides with a monster.
 		int spellDamage = missileDamage(caster);	//TODO: add more complexities for spell damage somewhere (should be a getter based on more general information)
 		target.takeDamage(spellDamage, caster,null);	//TODO: separate magic damage from physical. IDEA: have two separate takeDamage() methods OR a damage object.
-		poison_missle.takeEffect(target);										
+		poisonMissle.takeEffect(target);										
 		//TODO: in the case of a damaging spell, damage should be a getter based on spell information.	
 	}
 	
@@ -134,8 +124,8 @@ public class Spell {
 	private String name="";
 	private String school="";		//dominations, abjurations, etc.
 	public String castStyle="";	//missile, self-targeting, etc.
-	private static Map<String, LinkedList<String>> school_to_spell_map = new HashMap<String, LinkedList<String>>(); 
-	private static Map<String, Spell> spell_map = new HashMap<String, Spell>();
-	private Effect poison_missle = null;
+	private static Map<String, LinkedList<String>> schoolToSpellMap = new HashMap<String, LinkedList<String>>(); 
+	private static Map<String, Spell> spellMap = new HashMap<String, Spell>();
+	private Effect poisonMissle = null;
 	
 }

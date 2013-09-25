@@ -111,7 +111,7 @@ public class Ammo extends Item{
 	}
 
 	@Override
-	public String descriptiveName(int perception){	//TODO: make more descriptive as ammo gets more attributes.
+	public String descriptiveName(){	//TODO: make more descriptive as ammo gets more attributes.
 		return "+0 "+getMaterial()+" "+name;
 	}
 	

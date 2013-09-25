@@ -3,7 +3,7 @@ import java.util.Random;
 public class Level {
 	public Dungeon levelDungeon;
 	private TurnCounter turnCounter=new TurnCounter(this);
-	
+	private Random dice=new Random();
 	public Stairs[] downStairs = new Stairs[10];
 	public Stairs[] upStairs = new Stairs[10];
 	
@@ -365,6 +365,11 @@ public class Level {
 	public void mapTile(int xPos, int yPos) {
 		if(containsTile(xPos,yPos))
 			getTile(xPos,yPos).playerMapped=true;
+	}
+	
+	public void unmapTile(int xPos, int yPos) {
+		if(containsTile(xPos,yPos))
+			getTile(xPos,yPos).playerMapped=false;
 	}
 	
 	//monster methods
@@ -921,6 +926,34 @@ public class Level {
 		}
 		return false;
 	}
+	
+	//sound methods
+	
+	public void addSound(Sound sound, Tile sourceTile) {	//add a sound that originates from a given tile
+		if(containsTile(sourceTile)){
+			
+			int radius=sound.getVolume();
+			
+			int xStart=sourceTile.xCoord-radius;
+			int yStart=sourceTile.yCoord-radius;
+		
+			int xEnd=sourceTile.xCoord+radius;
+			int yEnd=sourceTile.yCoord+radius;
+			
+			for(int i=xStart;i<xEnd;i++){
+				for(int j=yStart;j<yEnd;j++){
+					if(containsTile(i,j)&&getTile(i,j).monster!=null){
+						Monster source=sourceTile.monster;
+						if(source!=null)
+							getTile(i,j).monster.hearSound(source,sound);
+						else{
+							//TODO: case for sounds that do not come from monsters belongs here.
+						}
+					}
+				}	
+			}
+		}
+	}
 
 	//depth getters for spawning
 	
@@ -950,5 +983,23 @@ public class Level {
 		return floor+levelBranch.itemModifier(Ammo.class);
 	}
 
+	public int randomLevelsUp(int max) {	//a random, valid number of levels up or down from this.
+		int levelRoom=0;
+		while(levelBranch.containsLevel(levelRoom-1)
+			&& Math.abs(levelRoom)<max)
+			levelRoom--;
+		if(levelRoom==0)
+			return 0;
+		return dice.nextInt(Math.abs(levelRoom))+1;	
+	}
 	
+	public int randomLevelsDown(int max) {
+		int levelRoom=0;
+		while(levelBranch.containsLevel(levelRoom+1)
+			&& Math.abs(levelRoom)<max)
+			levelRoom++;
+		if(levelRoom==0)
+			return 0;
+		return dice.nextInt(Math.abs(levelRoom))+1;	
+	}
 } 

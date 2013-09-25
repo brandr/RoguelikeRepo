@@ -38,7 +38,7 @@ public class Equipment extends Item{
 	}
 	
 	@Override			//name if this particular weapon has been identified.
-	public String descriptiveName(int perception){	//TODO: allow +0 to be another modifier if necessary. also, this probably doesn't need an arg.
+	public String descriptiveName(){	//TODO: allow +0 to be another modifier if necessary. also, this probably doesn't need an arg.
 		return "+0 "+material+" "+name;
 	}
 	

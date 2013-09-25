@@ -207,6 +207,16 @@ public class Tile {
 		return takenItem;
 	}
 	
+	public boolean adjacentTo(Tile otherTile){
+		if(this.equals(otherTile))
+			return false;
+		int xDif=Math.abs(xCoord-otherTile.xCoord);
+		int yDif=Math.abs(yCoord-otherTile.yCoord);
+		if(xDif<=1&&yDif<=1)
+			return true;
+		return false;
+	}
+	
 	public boolean containsItems() {
 		return (!tileItems.isEmpty());
 	}
@@ -217,6 +227,10 @@ public class Tile {
 	
 	public boolean isEmpty(){		//if a tile has absolutely nothing in it, return true. (returns false for walls and other impassable tiles.)
 		return isPassable&&!containsItems()&&!containsMonster()&&tileItems.noGold();
+	}
+	
+	public boolean isSolid(){
+		return !containsMonster()&&!isPassable;
 	}
 	
 	public void setVisible(){
@@ -240,6 +254,18 @@ public class Tile {
 		int roll=minimum+dice.nextInt(floorTag+20);
 		setSearchDifficulty(roll);
 	}
+	
+	public void resetColor(){
+		color=permanentColor;
+	}
+	
+	public void setColor(String color) {
+		this.color=color;
+	}
+	
+	//sound methods
+	
+	//TODO
 
 	public Random dice=new Random();
 	
@@ -263,6 +289,10 @@ public class Tile {
 	
 	public Monster monster=null;
 	public ItemStack tileItems=new ItemStack();
+
+	
+
+	
 
 	
 
