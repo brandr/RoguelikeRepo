@@ -9,6 +9,11 @@ public class Monster extends Entity{
 	public final int INVENTORY_SLOTS=6;		//number of places to wear equipment
 	public final Weapon UNARMED=new Weapon("hands",0,Weapon.FISTS,Material.FLESH);
 	
+	public static final String UNINTELLIGENT="unintelligent";
+	public static final String INTELLIGENT="intelligent";
+	
+	public static final String[] MONSTER_INTELLIGENCES={UNINTELLIGENT,INTELLIGENT};
+	
 	Random randGenerator=new Random();
 	
 	public Monster(){
@@ -357,6 +362,12 @@ public class Monster extends Entity{
 		return false;
 	}*/
 
+	//AI setters/getters
+	
+	public void setIntelligence(String intelligence) {
+		//TODO	
+	}
+	
 	//movement methods		(consider giving some of these their own class)
 	
 	public void move (char direction){
@@ -570,7 +581,7 @@ public class Monster extends Entity{
 				//target should only take damage if the hit is successful.
 			target.takeDamage(damage,this,currentWeapon().getMaterial());
 			if(stunCountDown==0&&stunRoll()&&target.currentHp()>0){
-				Status oneTurnStun=new Status("stunned",Status.IMMOBILE,0,2);
+				Status oneTurnStun=new Status("stunned",Status.IMMOBILE,0,turnDelay+1);	//TODO: make sure turnDelay+1 is right by testing stuns.
 				oneTurnStun.canMove=false;
 				target.addStatus(oneTurnStun);
 				changeCurrentMessage(currentMessageName()+" stunned " +target.currentMessageName()+"!",currentTile,false);
@@ -1094,7 +1105,7 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 			for(int i=0;i<statuses.length&&statuses[i]!=null;i++){
 				statuses[i].takeEffect(this);
 			}
-			decrementAllDurations();
+			//decrementAllDurations();
 		}
 		
 		public void decrementAllDurations(){	//every turn, all nonzero status durations go down by 1.
@@ -1234,11 +1245,18 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		}
 		return false;
 	}
+	
+	//turn delay methods
+	
+	public int getTurnDelay() {
+		return turnDelay;
+	}
 		
 	private Random dice = new Random();
 	public double spawnChance=1.0;
 
 	public FOV fov;
+	private int turnDelay=20;
 	private AIState AIstate=new AIState(AIState.IDLE,this);
 	
 	protected String name;
@@ -1268,4 +1286,5 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	public boolean stunnedLastTurn=false; //keeps track of whether this monster stunned another monster the last turn.
 
 	private Branch[] availableBranches=new Branch[Dungeon.BRANCH_COUNT];
+
 }

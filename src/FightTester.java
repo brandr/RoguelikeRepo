@@ -29,6 +29,8 @@ TODO category: current goals
 		will need to do to complete the task. You can also add new tasks to this section if you think
 		they should be here.
 
+Consider making a Mind class to store a monster's knowledge, behavior patterns, etc
+
 set up materials so that there cannot be cloth weapons, rocks made of anything other
  	than wood, etc (UNCLAIMED)
  	*excluded materials are set up, but not implemented. Use xml files and
@@ -36,22 +38,17 @@ set up materials so that there cannot be cloth weapons, rocks made of anything o
 
 set up food/hunger penalties (done by Nick, but he needs to push again.)
 
-fix turn structure (UNCLAIMED)
-	*Nick's idea: have a "tick counter" for the player's current level, which increments by one until
-		it hits a monster's "turn delay" (an int value.)
-	*At this point, that monster gets to take its turn. Hitting the player's turn "pauses" the tick counter, 
-		but leaves it at the same value until the player's turn ends.
-	*Consider min/max turn delays (1-30? 1-40?)
+fix turn structure (Robert)
+	*implemented, but may be wonky. also need to test monsters with varying turn delays.
+		*Make an unintelligent "slime" monster
+	*need to make sure this works well with potions, although that won't be much of an issue until potions are fully implemented.
 	*If the player and a monster have the same turn delay, the player moves first. (We think)
-	*NOTE: since a tick counter can only cycle properly by using the least common factor of the turn delay of every monster on the level,
-		consider not having it cycle at all, but incrementing indefinitely and letting a monster take its turn whenever tickCounter%turnDelay==0.
-	*On the player's turn, "pause" the counter by having the method's while loop return or something. Start counting again upon endPlayerTurn().
 	*This new system will affect monster/player speed, status effect durations (like stuns), message order, etc.
-	*test the basic concept in FightTester before starting to implement it
 	*Once it is implemented, test the system using a very slow monster (like a slime)
 
 add burdening penalties (UNCLAIMED)
-
+	*will involve turn delay
+	
 reorganize the monster class so that monster-only methods are in a separate section 
 	(or a separate class altogether) (UNCLAIMED)
 	

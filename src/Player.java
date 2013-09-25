@@ -6,7 +6,6 @@ public class Player extends Monster{
 	public static final String PLAYER_COLOR="931D1D";
 	
 	public static final String[] BURDEN_STATES={"","burdened","strained","overtaxed"};
-	public static final String[] HUNGER_STATES={"starving", "near starving", "very hungry", "hungry", "", "satiated", "engorged"}; 
 	
 	
 	public Player() {
@@ -46,7 +45,6 @@ public class Player extends Monster{
 		info+="MP: "+showMagicPoints()+"\n";
 		info+="Armor: "+armorRating()+"\n";
 		info+=burdenState();
-		info+=hungerState();
 		return info;
 	}
 	
@@ -86,18 +84,11 @@ public class Player extends Monster{
 		if(stunCountDown>0)		//cannot stun repeatedly with STR-based stuns.
 			stunCountDown--;
 		regenStep();
-		hungerStep();
 		
-		Monster[] otherMonsters=currentLevel.levelMonsters;
-		for(int i=0;i<otherMonsters.length;i++){
-			if(otherMonsters[i]!=null
-				&&otherMonsters[i]!=this){		//!= might not be a sophisticated enough operator here, once there are many monster types
-				otherMonsters[i].turn();
-			}	
-		}
-		if(currentLevel.monsterGenerator!=null)
+		currentLevel.startTurnCounter();
+		if(currentLevel.monsterGenerator!=null)	//TODO: this should be in some sort of tick method for turnCounter or Level.
 			currentLevel.monsterGenerator.step();	//chance to produce a random monster. placed after the "other monsters" turn so a monster cannot spawn right next to the player and then attack.
-		statusesOccur(); //should this go here?
+		statusesOccur(); //TODO: decrement statuses based on ticks, not turns. (also maybe do status effects this way?)
 		RogueLikeGui.refreshScreen();
 		}
 	}
@@ -110,14 +101,7 @@ public class Player extends Monster{
 			if(WIL()>dice.nextInt(100))
 				restoreMp(1);
 		}
-		}
-		
-	private void hungerStep() {
-		if (currentHp()>0){
-			decrementHungerPoints();
-		}
 	}
-	
 	
 	public void attemptEquip(int itemIndex){		//consider breaking this up into multiple methods if I need to work with it again.
 		if((inventory.getItem(itemIndex)).equippable()){		//checks to make sure the item is actually equipment
@@ -146,6 +130,7 @@ public class Player extends Monster{
 							pickUpAllTileItems();
 				if(currentTile.getClass()==Trap.class)
 					((Trap)currentTile).trigger(this);	//TODO: if the trap can be dodged, switch this with another method for dodging traps.
+				decrementHungerPoints();
 				return;
 				}
 		else if(tile.monster!=null){
@@ -688,7 +673,7 @@ public class Player extends Monster{
 			stats=startingStats;
 			setHitPoints((int)((5.0+(playerRace.HPMod()*(FOR()/5.0)))+playerClass.HPRoll()));		//starting HP is set here.
 			setMagicPoints((int)((5.0+(playerRace.MPMod()*(WIL()/6.0)))+playerClass.MPRoll()));
-			setHungerPoints(100);	//TODO: this is temporary. set hunger points differently if they vary or have a different constant.
+			setHungerPoints(850);	//TODO: this is temporary. set hunger points differently if they vary or have a different constant.
 		}
 		
 		public void gainStatsRandom(int value) {
@@ -766,28 +751,6 @@ public class Player extends Monster{
 	
 	//hunger methods
 	
-	public String hungerState(){
-		int hunger=hungerPoints[0];
-		int index=0;
-		while(index<HUNGER_STATES.length-1){
-			if(hunger<hungerThresholds()[index])
-				return HUNGER_STATES[index];
-			index++;
-		}
-		return HUNGER_STATES[HUNGER_STATES.length-1];
-	}
-	
-	public int[] hungerThresholds(){
-		int[] thresholds=new int [HUNGER_STATES.length-1];
-		thresholds[0]= (int) (hungerPoints[1]*0);
-		thresholds[1]= (int) (hungerPoints[1]*.2);
-		thresholds[2]= (int) (hungerPoints[1]*.4);
-		thresholds[3]= (int) (hungerPoints[1]*.6);
-		thresholds[4]= (int) (hungerPoints[1]*.7);
-		thresholds[5]= (int) (hungerPoints[1]*.8);
-		return thresholds;
-	}
-		
 	private void setHungerPoints(int points){
 		if(points>0){
 			hungerPoints[0]=points;
@@ -802,12 +765,9 @@ public class Player extends Monster{
 	}
 	
 	private void decrementHungerPoints(){		//TODO: figure out how starvation works here. determine proper thresholds.
-		System.out.println(hungerPoints[0]);
 		if (hungerPoints[0]>0)
 			hungerPoints[0]--;
-		if (hungerPoints[0]<=0)
-			takeDamage(3, null, null);
-		//uncomment to help test hunger.
+		//System.out.println(hungerPoints[0]);	//uncomment to help test hunger.
 	}
 	
 	public boolean full(){
@@ -878,7 +838,7 @@ public class Player extends Monster{
 		return false;
 	}
 	
-	//weight/burdening methods
+	//weight/burdening
 	
 	public String burdenState(){
 		int weight=weightCarried();
