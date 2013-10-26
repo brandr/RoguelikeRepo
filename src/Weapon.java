@@ -39,25 +39,6 @@ public class Weapon extends Equipment{
 		name=null;
 		setIcon(STANDARDWEAPONICON);
 	}
-	/*
-	public Weapon(String name){
-		this.name=name;
-		setIcon(STANDARDWEAPONICON);
-	}
-	
-	public Weapon(String name, int power){
-		this.name=name;
-		setPower(power);
-		setIcon(STANDARDWEAPONICON);
-	}
-	
-	public Weapon(String familyName, int power, String weaponCategory) {
-		name=familyName;	//TODO: change as necessary
-		genericName=familyName;
-		weaponFamily=familyName;
-		setCategory(weaponCategory);
-		setPower(power);
-	}*/
 	
 	public Weapon(String name, String familyName, int power, String weaponCategory) {	//this constructor is only for artifact weapons.
 		this.name=name;
@@ -95,7 +76,10 @@ public class Weapon extends Equipment{
 			weaponCategory=toCopy.weaponCategory;
 			genericName=toCopy.genericName;
 			weaponFamily=toCopy.weaponFamily;
+			
 			identified=toCopy.identified;
+			cursed=toCopy.cursed;
+			
 			setAvailableBranches(toCopy.getAvailableBranches());
 			
 			setIcon(toCopy.getIcon());
@@ -105,6 +89,7 @@ public class Weapon extends Equipment{
 			setRangedDamage(toCopy.getRangedDamage());
 			quality= toCopy.quality;
 			variance=toCopy.variance;
+			weaponEnchantments=toCopy.weaponEnchantments;
 			
 			piercing=toCopy.piercing;
 			ranged=toCopy.ranged; 
@@ -160,8 +145,6 @@ public class Weapon extends Equipment{
 		}
 	}
 	
-	
-
 	//toStrings
 	
 	public String weaponStat(){
@@ -205,6 +188,7 @@ public class Weapon extends Equipment{
 			&& otherWeapon.variance==variance
 			&& otherWeapon.rangedDamage==rangedDamage
 			&& otherWeapon.baseThrownDamage==baseThrownDamage
+			&& otherWeapon.weaponEnchantments==weaponEnchantments
 			
 			&& getMaterial().equals(otherWeapon.getMaterial())){
 				//TODO: add more conditions as necessary. commented conditions are ones I'm not sure are necessary.			
@@ -314,6 +298,35 @@ public class Weapon extends Equipment{
 		}
 	}
 
+	//enchantment methods
+	
+	public void setEnchantments(int power,int toHit){	//these values should never be lower than -15 or above +15
+		weaponEnchantments[0] = power;
+		weaponEnchantments[1] = toHit;
+	}
+	
+	public int enchantPower(){
+		return weaponEnchantments[0];
+	}
+	
+	public int enchantToHit(){
+		return weaponEnchantments[1];
+	}
+	
+	@Override
+	public String enchantmentString(){
+		int power = enchantPower();
+		int toHit = enchantToHit();
+		return plusMinusString(power)+power+", "
+				+plusMinusString(toHit)+toHit;
+	}
+	
+	private String plusMinusString(int value) {	//this could be useful elsewhere
+		if(value < 0)
+			return "-";
+		return "+";
+	}
+
 	public Random dice = new Random();
 		//a ranged weapon can be used as a melee weapon, but most aren't very effective.
 	private int meleeDamage=0;
@@ -322,6 +335,8 @@ public class Weapon extends Equipment{
 	
 	public int quality=5; 	//quality weapons are more likely to choose high ranges upon variant hits
 	public double variance=0.3;	//weapon damage variablitity. on average this is neither good nor bad.
+	
+	private int[] weaponEnchantments = {0,0};
 	
 	public boolean ranged=false;
 	public boolean twoHanded = false;

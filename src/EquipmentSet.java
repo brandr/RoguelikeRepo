@@ -100,7 +100,7 @@ public class EquipmentSet {	//a set of equipment belonging to a player or monste
 	public void equip(Equipment item){				
 		 
 		String slot = null;
-		if(item.getClass()==Weapon.class)
+		if(item.getClass().equals(Weapon.class))
 			slot=Equipment.WEAPON;
 		else
 			slot=((Armor)item).getSlot();
@@ -152,12 +152,24 @@ public class EquipmentSet {	//a set of equipment belonging to a player or monste
 		
 		String slot=Equipment.WEAPON;
 		if(equippingWeapon.equipped){
-			confirmUnequip(slot,overwrite);
+			if(!equippingWeapon.cursed)
+				confirmUnequip(slot,overwrite);
+			else if(monster.getClass().equals(Player.class))
+				monster.changeCurrentMessage("Your weapon is stuck to your hand!", 
+						monster.currentTile, true);
 			return;
 		}
 		if(!equipmentSlotFree(slot)){
-			confirmUnequip(slot,overwrite);
-			overwrite=false;
+			Weapon weapon = currentWeapon();
+			if(!weapon.cursed){
+				confirmUnequip(slot,overwrite);
+				overwrite=false;
+			}
+			else if(monster.getClass().equals(Player.class)){
+				monster.changeCurrentMessage("Your weapon is stuck to your hand!", 
+						monster.currentTile, true);
+				return;
+			}
 		}
 		if(equippingWeapon.twoHanded
 		&& !equipmentSlotFree(Equipment.OFF_HAND)){
@@ -171,26 +183,48 @@ public class EquipmentSet {	//a set of equipment belonging to a player or monste
 		boolean overwrite=true;
 		String slot=equippingArmor.getArmorType();
 		if(equippingArmor.equipped){
-			confirmUnequip(slot,overwrite);
+			if(!equippingArmor.cursed)
+				confirmUnequip(slot,overwrite);
+			else{	//NOTE: need to stop monsters from ever getting this far
+				if(monster.getClass().equals(Player.class))
+					monster.changeCurrentMessage("You cannot remove your armor"
+							+ " because it is cursed!", monster.currentTile, true);
+			}
 			return;
 		}
 		if(!equipmentSlotFree(slot)){
-			confirmUnequip(slot,overwrite);
-			overwrite=false;
+			Equipment equipment = getEquipmentInSlot(slot);
+			if(!equipment.cursed){
+				if(!equippingArmor.cursed){
+					confirmUnequip(slot,overwrite);
+					overwrite=false;
+				}
+				else{	//NOTE: need to stop monsters from ever getting this far
+					if(monster.getClass().equals(Player.class))
+					monster.changeCurrentMessage("You cannot remove your equipment"
+							+ " because it is cursed!", monster.currentTile, true);
+				}
+				
+			}
+			else{
+				if(monster.getClass().equals(Player.class))
+					monster.changeCurrentMessage("You cannot unequip that item"
+							+ " because it is cursed!", monster.currentTile, true);
+				return;
+			}
 		}
-		if(slot==Equipment.OFF_HAND
+		if(slot.equals(Equipment.OFF_HAND)
 		&& currentWeapon()!=null
 		&& currentWeapon().twoHanded){//checks to see if the player is trying to equip a shield while holding a two-handed weapon.
 			confirmUnequip(Equipment.WEAPON,overwrite);
 			overwrite=false;
 		}
-		else if(slot==Equipment.CHEST
+		else if(slot.equals(Equipment.CHEST)
 			&& getEquipmentInSlot(Equipment.CLOAK)!=null){
 			confirmUnequip(Equipment.CLOAK,overwrite);
 			overwrite=false;
 		}
 		confirmEquip(equippingArmor,overwrite);
-				
 	}
 	
 	private void confirmEquip(Equipment equipment,boolean overwrite) {
@@ -223,14 +257,12 @@ public class EquipmentSet {	//a set of equipment belonging to a player or monste
 			 &&!((Armor)equipment[i-1]).getSlot().equals(Equipment.OFF_HAND)){	//check that this equipment is not a shield (this method is only reached if shield blocking fails)
 				double nextProbability=cumulativeProbabilities[index-1]+((Armor)equipment[i-1]).coverage();
 				if(nextProbability>=materialRoll){
-					//System.out.println("Hit "+equipment[i-1]+". Roll: "+materialRoll+". Cumulative probability: "+nextProbability);	//for testing
 					return (Armor) equipment[i-1];
 				}
 				cumulativeProbabilities[index]=nextProbability;
 				index++;
 			}
 		}
-		//System.out.println("Hit flesh. Roll: "+materialRoll);	//for testing
 		return monster.monsterHide();
 	}
 	

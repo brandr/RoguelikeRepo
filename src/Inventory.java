@@ -1,3 +1,5 @@
+import java.util.Random;
+
 
 public class Inventory {
 
@@ -41,6 +43,12 @@ public class Inventory {
 			case("Potion"):
 				items[i]=new Potion((Potion)inventory.getItem(i));
 				break;
+			case("Scroll"):
+				items[i]=new Scroll((Scroll)inventory.getItem(i));
+				break;
+			case("Spellbook"):
+				items[i]=new Spellbook((Spellbook)inventory.getItem(i));
+				break;
 			case("Weapon"):
 				items[i]=new Weapon((Weapon)inventory.getItem(i));
 				break;
@@ -58,11 +66,8 @@ public class Inventory {
 			for(int j=0;j<columnSize&&itemIndex<maxItems&&items[itemIndex]!=null;j++){
 				boolean equipString=items[itemIndex].equippable();
 				retVal[i][j]=player.displayItemName(items[itemIndex],equipString);		
-				if(items[itemIndex].stackable()&&items[itemIndex].enoughInStack(2))
-					retVal[i][j]=Item.plural(retVal[i][j])+"fff ("+items[itemIndex].getAmount()+") "+equipString(items[itemIndex]);
 				itemIndex++;
 				}
-				
 			}
 		return retVal;
 		}
@@ -77,8 +82,6 @@ public class Inventory {
 		while (index<maxItems&&index<columnSize()*(columnIndex+1)&&items[index]!=null){
 			columnString+="("+Item.getCharForNumber(index)+") ";
 			String nextItemString=player.displayItemName(items[index],false);
-			if(items[index].stackable()&&items[index].enoughInStack(2))
-					nextItemString=Item.plural(nextItemString)+" ("+items[index].getAmount()+")";
 			nextItemString+=" "+equipString(items[index]);
 			columnString+=nextItemString+"\n";
 			index++;
@@ -100,11 +103,23 @@ public class Inventory {
 		for(int i=0;i<count;i++){
 			Item nextItem=itemsOfType.getItem(i);
 			showItems[i]="("+itemLetters[i]+") ";
-			String itemName=player.displayItemName(itemsOfType.getItem(i),false);
-			if(nextItem.stackable()&&nextItem.enoughInStack(2))
-				showItems[i]+=Item.plural(itemName)+ " ("+nextItem.getAmount()+")";
-			else
-				showItems[i]+=itemName;
+			String itemName=player.displayItemName(itemsOfType.getItem(i),false);	
+			showItems[i]+=itemName;
+			showItems[i]+= " "+equipString(nextItem);
+			}
+		return showItems;
+	}
+	
+	public String[] showItemsWithConstraint(String constraint, Player player) {
+		Inventory itemsWithConstraint=getItemsWithConstraint(constraint);
+		char[] itemLetters=lettersForItemsWithConstraint(constraint);
+		int count = itemsWithConstraint.getItemCount();
+		String[] showItems=new String[count];
+		for(int i=0;i<count;i++){
+			Item nextItem=itemsWithConstraint.getItem(i);
+			showItems[i]="("+itemLetters[i]+") ";
+			String itemName=player.displayItemName(itemsWithConstraint.getItem(i),false);
+			showItems[i]+=itemName;
 			showItems[i]+= " "+equipString(nextItem);
 			}
 		return showItems;
@@ -130,43 +145,43 @@ public class Inventory {
 		return items[maxItems-1]!=null;
 	}
 	
-	//gold-related methods
+		//gold-related methods
 	
-			public int getGold(){
-				return gold;
-			}
+	public int getGold(){
+		return gold;
+	}
 			
-			public void setGold(int gold){
-				if(validGoldAmount(gold))
-					this.gold=gold;
-			}
+	public void setGold(int gold){
+		if(validGoldAmount(gold))
+			this.gold=gold;
+	}
 			
-			public void addGold(int adjustment){	//increase or decrease gold amount
-				if (validGoldAmount(gold+adjustment))
-					setGold(gold+adjustment);
-			}
+	public void addGold(int adjustment){	//increase or decrease gold amount
+		if (validGoldAmount(gold+adjustment))	//adjustment can be negative, but resultant gold amount cannot.
+			setGold(gold+adjustment);
+	}
 			
-			public int takeGold(int takenGold){
-				if(validGoldAmount(gold-takenGold)){
-					addGold(-1*takenGold);
-					return takenGold;
-				}
-				return 0;		//should this return 0, or should it return gold? main goal is to avoid error cases.
+	public int takeGold(int takenGold){
+		if(validGoldAmount(gold-takenGold)){
+			addGold(-1*takenGold);
+			return takenGold;
 			}
+		return 0;		//should this return 0, or should it return gold? main goal is to avoid error cases.
+	}
 			
-			public int takeAllGold(){
-				int allGold=gold;
-				gold=0;
-				return allGold;
-			}
+	public int takeAllGold(){
+		int allGold=gold;
+		gold=0;
+		return allGold;
+	}
 			
-			public boolean noGold(){
-				return gold==0;
-			}
+	public boolean noGold(){
+		return gold==0;
+	}
 			
-			public boolean validGoldAmount(int goldAmount){
-				return goldAmount>=0&&goldAmount<=MAX_GOLD;
-			}
+	public boolean validGoldAmount(int goldAmount){
+		return goldAmount>=0&&goldAmount<=MAX_GOLD;
+	}
 	
 	//getters, adders, removers, etc.
 	
@@ -233,8 +248,8 @@ public class Inventory {
 	
 	public boolean containsItem(Item searchedItem) {
 		int index=0;
-		while(items[index]!=searchedItem&&items[index]!=null){
-			if(items[index]==searchedItem)
+		while(index<maxItems&&items[index]!=null){
+			if(items[index].equals(searchedItem))
 				return true;
 			index++;
 			}
@@ -268,6 +283,9 @@ public class Inventory {
 		case("Potion"):
 			itemClass=Potion.class;
 		break;
+		case("Readable"):
+			itemClass=Readable.class;
+		break;
 		case("Equipment"):		//TODO: should either change "getCanonicalName()" to another method, or make separate lists of armor and weapons, then combine them.
 			itemClass=Equipment.class;
 		break;
@@ -283,6 +301,35 @@ public class Inventory {
 		return itemsOfType;
 	}
 	
+	public Inventory getItemsWithConstraint(String constraint) {
+		Inventory itemsOfType = new Inventory();
+			int count=getItemCount();		
+			for(int i=0;i<count;i++){
+				if(itemMatchesConstraint(getItem(i), constraint))
+					itemsOfType.addItem(getItem(i));
+			}
+		return itemsOfType;
+	}
+	
+	private boolean itemMatchesConstraint(Item item, String constraint){
+		switch(constraint){
+		case(Targeting.UNIDENTIFIED):
+			return !item.identified();
+		case(Targeting.CURSEABLE):
+			return item.isEquipment()&& !((Equipment)item).cursed;
+		case(Targeting.CURSED):
+			return item.isEquipment()&& ((Equipment)item).cursed;
+		default:
+			return false;
+		}
+	}
+	
+	public Item randomItem(){
+		int count = getItemCount();
+		int index = dice.nextInt(count);
+		return getItem(index);
+	}
+	
 	private char[] lettersForItemsOfType(String itemType){		//should this be public?
 		Class<?> itemClass;
 		switch(itemType){
@@ -293,6 +340,9 @@ public class Inventory {
 		break;
 		case("Potion"):
 			itemClass=Potion.class;
+		break;
+		case("Readable"):
+			itemClass=Readable.class;
 		break;
 		case("Equipment"):	//TODO: add more cases as necessary.
 			itemClass=Equipment.class;
@@ -314,7 +364,25 @@ public class Inventory {
 		return lettersForType;
 	}
 	
-	private char [] allInventoryLetters(){		//return all letters associated with items in this inventory
+	private char[] lettersForItemsWithConstraint(String constraint){
+		switch(constraint){
+		case(Targeting.UNIDENTIFIED):
+			int count=getItemCount();
+			char[] lettersForConstraint = new char[getItemCount()];
+			int letterIndex=0;
+			for(int i=0;i<count;i++){
+				if(!(getItem(i).identified)){
+					lettersForConstraint[letterIndex]=Item.getCharForNumber(i);
+					letterIndex++;
+				}
+			}
+			return lettersForConstraint;
+		default:
+			return null;
+		}
+	}
+	
+	private char[] allInventoryLetters(){		//return all letters associated with items in this inventory
 		char[] inventoryLetters=new char[getItemCount()];
 		for(int i=0;i<getItemCount();i++){
 			inventoryLetters[i]=Item.getCharForNumber(i);
@@ -350,6 +418,25 @@ public class Inventory {
 		return weight;
 	}
 	
+	public boolean allItemsIdentified() {
+		int count=getItemCount();
+		for(int i=0;i<count;i++){
+			if(!getItem(i).identified)
+				return false;
+		}
+		return true;
+	}
+	
+	public boolean noItemsIdentified() {
+		int count=getItemCount();
+		for(int i=0;i<count;i++){
+			if(getItem(i).identified)
+				return false;
+		}
+		return true;
+	}
+	
+	private Random dice = new Random();
 	private int gold=0;
 	private int columnCount=2;
 	private int maxItems;

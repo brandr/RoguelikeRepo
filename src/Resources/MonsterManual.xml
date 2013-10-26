@@ -333,8 +333,6 @@
       </inventory>
     </monster>    
     <monster>
-      <minimumDepth>3</minimumDepth>
-      <maximumDepth>6</maximumDepth>
       <name>Skeleton</name>
       <icon>k</icon>
       <color>585858</color>
@@ -349,6 +347,15 @@
       </inventory>
     </monster>
     <monster>
+    	<name>Slime</name>
+    	<icon>S</icon>
+    	<color>6BB324</color><intelligence>unintelligent</intelligence>
+    	<hitPoints>12</hitPoints>
+    	<baseDamage>2</baseDamage>
+    	<baseArmor>0</baseArmor>
+    	<turnDelay>55</turnDelay>
+    	<spawnChance>1.0</spawnChance>
+    	</monster><monster>
       <minimumDepth>26</minimumDepth>
       <maximumDepth>37</maximumDepth>
       <name>Succubus</name>
@@ -433,4 +440,5 @@
       <inventory>
       </inventory>
     </monster>
+     
 </monsters>

@@ -27,7 +27,10 @@ public class Armor extends Equipment{
 		name=toCopy.name;
 		genericName=toCopy.genericName;
 		armorType=toCopy.armorType;
+		
 		identified=toCopy.identified;
+		cursed=toCopy.cursed;
+		
 		setAvailableBranches(toCopy.getAvailableBranches());
 		setIcon(toCopy.getIcon());
 		setWeight(toCopy.getWeight());

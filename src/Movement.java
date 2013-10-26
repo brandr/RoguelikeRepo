@@ -219,6 +219,22 @@ public class Movement {	//contains many of the movement functions. TODO: transfe
 		return tiles;
 	}
 	
+
+	public static Tile[] adjacentPassableTiles(Level level, Tile centerTile) {	//inclues tiles with  monsters
+		Tile[] tiles=new Tile[10];
+		int index=0;
+		for(int i=1;i<tiles.length;i++){
+			char direction=Character.forDigit(i, 10);
+			Tile nextTile=tileInDirection(level,centerTile,direction);
+			if(nextTile!=null&&i!=5
+			 &&(nextTile.isPassable||nextTile.containsMonster())){
+				tiles[index]=tileInDirection(level,centerTile,direction);
+				index++;
+			}
+		}
+		return tiles;
+	}
+	
 	public static Tile[] adjacentTiles(Monster monster){	//TODO: test this by making a "search" method for the player to use.
 		Tile[] tiles=new Tile[10];
 		int index=0;
@@ -274,6 +290,16 @@ public class Movement {	//contains many of the movement functions. TODO: transfe
 			return currentLevel.getTile(tileX, tileY);
 		else
 			return null;
+	}
+	
+	public static Tile tileInDirection(Level level, Tile centerTile, char direction,int distance) {
+			int count=0;
+			Tile returnTile=new Tile(centerTile);
+			while(count<distance&&returnTile!=null){
+				returnTile=new Tile(tileInDirection(level,returnTile,direction));
+				count++;
+			}
+		return returnTile;
 	}
 	
 	public static Tile[] tilesBehind(Level level, Tile observerTile, Tile frontTile){
@@ -332,7 +358,93 @@ public class Movement {	//contains many of the movement functions. TODO: transfe
 		return straightLine(tile1.xCoord,tile1.yCoord,tile2.xCoord,tile2.yCoord);
 	}
 	
-	//dummy tiles
+	public static boolean clearLine(Level level, Tile fromTile, Tile toTile) {
+		if(!level.containsTile(fromTile)||!level.containsTile(toTile))
+			return false;
+		if(fromTile.isSolid()||toTile.isSolid())
+			return false;
+		if(fromTile.equals(toTile))
+			return true;
+		TileList line=tileLine(level,fromTile,toTile);
+		int length=line.length();
+		for(int i=0;i<length;i++){
+			if(line.getTile(i).isSolid())
+				return false;
+		}
+		return true;
+	}
+	
+	public static TileList tileLine(Level level,Tile startTile,Tile endTile){	//there might be a way to make this method shorter.
+		if(startTile==null||endTile==null)
+			return null;
+		TileList line=new TileList();
+		line.addTile(startTile);
+		
+		int x1=startTile.xCoord;
+		int x2=endTile.xCoord;
+		
+		int y1=startTile.yCoord;
+		int y2=endTile.yCoord;
+		
+		int xDist=(x2-x1);
+		int yDist=(y2-y1);
+			
+		double slope=0;
+	
+		if(Math.abs(xDist)>Math.abs(yDist)){
+			
+			if(x1>x2){
+				int tempX=x1;
+				x1=x2;
+				x2=tempX;
+				
+				int tempY=y1;
+				y1=y2;
+				y2=tempY;
+				}
+
+			for(int xPos=x1;xPos!=x2;xPos++){
+				slope=slope(x1,x2,y1,y2);
+				int xIncrement=xPos-x1;
+				int yIncrement=sideLength(slope,xIncrement);
+				int yPos=y1+yIncrement;
+				line.addTile(level.getTile(xPos, yPos));
+			}
+		}
+		else{
+			
+			if(y1>y2){
+				int tempX=x1;
+				x1=x2;
+				x2=tempX;
+				
+				int tempY=y1;
+				y1=y2;
+				y2=tempY;
+			}
+
+			for(int yPos=y1;yPos!=y2;yPos++){
+				slope=slope(y1,y2,x1,x2);
+				int yIncrement=yPos-y1;
+				int xIncrement=sideLength(slope,yIncrement);	
+				int xPos=x1+xIncrement;
+				line.addTile(level.getTile(xPos, yPos));
+			}
+		}
+		
+		line.addTile(endTile);
+		return line;
+	}
+	
+	public static int sideLength(double slope, int otherSide){
+		return (int) Math.round(slope*otherSide);
+	}
+	
+	public static double slope(int x1,int x2, int y1, int y2){
+		return(double)(y2-y1)/(double)(x2-x1);
+	}
+	
+	//dummy tiles	(tiles not actually on the level, but used to process things like FOVs
 	
 	public static Tile dummyTileInDirection(Tile startTile, char direction){
 		Tile dummy=new Tile(startTile);
@@ -340,5 +452,7 @@ public class Movement {	//contains many of the movement functions. TODO: transfe
 		dummy.yCoord+=numpadToY(direction);
 		return dummy;
 	}
+
+	
 	
 }

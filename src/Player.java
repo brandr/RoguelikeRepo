@@ -5,7 +5,16 @@ public class Player extends Monster{
 	public static final char PLAYER_ICON='@';
 	public static final String PLAYER_COLOR="931D1D";
 	
+	public static final String STRENGTH="strength";
+	public static final String DEXTERITY="dexterity";
+	public static final String FORTITUDE="fortitude";
+	public static final String WILLPOWER="willpower";
+	public static final String INTELLIGENCE="intellgence";
+	public static final String LUCK="luck";
+	public static final String[] STAT_NAMES={STRENGTH,DEXTERITY,FORTITUDE,WILLPOWER,INTELLIGENCE,LUCK};
+
 	public static final String[] BURDEN_STATES={"","burdened","strained","overtaxed"};
+	public static final String[] HUNGER_STATES={"starving", "near starving", "very hungry", "hungry", "", "satiated", "engorged"}; 
 	
 	
 	public Player() {
@@ -17,7 +26,7 @@ public class Player extends Monster{
 	}
 	
 	public Player(String name) {
-		this.name = name;		
+		this.name = name;
 		enemyMonsters=null;
 		setIcon(PLAYER_ICON);
 		this.color=PLAYER_COLOR;
@@ -44,7 +53,8 @@ public class Player extends Monster{
 			info+="Hitpoints: 0/"+maxHitPoints()+"\n";
 		info+="MP: "+showMagicPoints()+"\n";
 		info+="Armor: "+armorRating()+"\n";
-		info+=burdenState();
+		info+=burdenState()+"\n";
+		info+=hungerState()+"\n";
 		return info;
 	}
 	
@@ -78,22 +88,24 @@ public class Player extends Monster{
 	public void endPlayerTurn(){
 		
 		if(gameStarted){
-			fov.devRefreshFOV();	//for testing only. Useful for testing monster AI.
-			//fov.refreshFOV();
+			//fov.devRefreshFOV();	//for testing only. Useful for testing monster AI.
+			fov.refreshFOV();
 		
 		if(stunCountDown>0)		//cannot stun repeatedly with STR-based stuns.
 			stunCountDown--;
 		regenStep();
+		hungerStep();
 		
 		currentLevel.startTurnCounter();
 		if(currentLevel.monsterGenerator!=null)	//TODO: this should be in some sort of tick method for turnCounter or Level.
 			currentLevel.monsterGenerator.step();	//chance to produce a random monster. placed after the "other monsters" turn so a monster cannot spawn right next to the player and then attack.
 		statusesOccur(); //TODO: decrement statuses based on ticks, not turns. (also maybe do status effects this way?)
+		if(name.equals("Robert"))
+			rollMapAmnesia();
 		RogueLikeGui.refreshScreen();
 		}
 	}
-	
-	
+
 	private void regenStep() {		//a chance to restore 1 HP/MP this turn.
 		if(currentHp()>0){
 			if(FOR()>dice.nextInt(100))
@@ -101,6 +113,11 @@ public class Player extends Monster{
 			if(WIL()>dice.nextInt(100))
 				restoreMp(1);
 		}
+	}
+	
+	private void rollMapAmnesia() {
+		if(dice.nextInt(160)>151)
+			forgetMap();
 	}
 	
 	public void attemptEquip(int itemIndex){		//consider breaking this up into multiple methods if I need to work with it again.
@@ -117,6 +134,8 @@ public class Player extends Monster{
 	public void moveTo(int xPos, int yPos){
 		//TODO: may need more error handling to prevent moving past solid objects, or out of the room.
 			//should this be in the monster move command?
+		
+		
 		if(currentLevel.containsTile(xPos, yPos)){
 			Tile tile=currentLevel.getTile(xPos, yPos);
 			
@@ -128,9 +147,10 @@ public class Player extends Monster{
 						|| currentTile.getGold()!=0)
 						&& RogueLikeGui.autoPickUp)
 							pickUpAllTileItems();
-				if(currentTile.getClass()==Trap.class)
+				if(currentTile.getClass().equals(Trap.class))
 					((Trap)currentTile).trigger(this);	//TODO: if the trap can be dodged, switch this with another method for dodging traps.
-				decrementHungerPoints();
+				else	//TODO: traps going off should create sounds that are not footsteps, and monsters without feet should not create footsteps.
+					currentLevel.addSound(new Sound("footsteps",3), currentTile);
 				return;
 				}
 		else if(tile.monster!=null){
@@ -138,7 +158,7 @@ public class Player extends Monster{
 			attack(tile.monster);
 		}
 			
-		else if(tile.getClass()==Door.class&&tile.isVisible){
+		else if(tile.getClass().equals(Door.class)&&tile.isVisible){
 			openDoor((Door)currentLevel.getTile(xPos, yPos));
 		}
 		}
@@ -350,6 +370,10 @@ public class Player extends Monster{
 		return playerExperience.experiencePoints[0]>=playerExperience.experiencePoints[1];
 	}
 	
+	public int expToNextLevel(){
+		return playerExperience.expToNextLevel();
+	}
+	
 	//search/identify methods
 	
 	public void search() {	//searching improves with higher perception.
@@ -368,7 +392,7 @@ public class Player extends Monster{
 		int difficulty=tile.getSearchDifficulty();
 		
 		int minRoll=5*skillLevel(Skill.UTILITY,Skill.SEARCHING);
-		int maxRoll=Math.max(minRoll+1, difficulty+2*PER());	//every tile is searchable, no matter how hard, but some may take many tries.
+		int maxRoll=Math.max(minRoll+1, difficulty+2*INT());	//every tile is searchable, no matter how hard, but some may take many tries.
 		
 		int roll=minRoll+dice.nextInt(maxRoll-minRoll);	//doesn't need a +1, since PER() cannot be lower than 7.
 		
@@ -646,28 +670,41 @@ public class Player extends Monster{
 	
 	//stat methods. TODO: make leveling up increase stats. also, make all stats affect gameplay.
 	
+		public static String statName(int index){
+			switch(index){
+			case 0: return "Strength";
+			case 1: return "Dexterity";
+			case 2: return "Fortitude";
+			case 3: return "Willpower";
+			case 4: return "Intelligence";
+			case 5: return "Luck";
+			}
+			return "";
+		}
+	
 		public String statAbbreviation(int index){
 			switch(index){
 			case 0: return "STR";
 			case 1: return "DEX";
 			case 2: return "FOR";
-			case 3: return "PER";
-			case 4: return "WIL";
-			case 5: return "INT";
-			case 6: return "LCK";
+			case 3: return "WIL";
+			case 4: return "INT";
+			case 5: return "LCK";
 			}
 			return "";
 		}
 		
 		public int STR(){return stats[0];}	public int DEX(){return stats[1];}	//getters
-		public int FOR(){return stats[2];}	public int PER(){return stats[3];}
-		public int WIL(){return stats[4];}	public int INT(){return stats[5];}
-		public int LCK(){return stats[6];}
+		public int FOR(){return stats[2];}	public int WIL(){return stats[3];}	
+		public int INT(){return stats[4];}	public int LCK(){return stats[5];}
 		
-		public void adjustSTR(int a){stats[0]+=a;}	public void adjustDEX(int a){stats[1]+=a;}	//mutators
-		public void adjustFOR(int a){stats[2]+=a;}	public void adjustPER(int a){stats[3]+=a;}
-		public void adjustWIL(int a){stats[4]+=a;}	public void adjustINT(int a){stats[5]+=a;}
-		public void adjustLCK(int a){stats[6]+=a;}
+		public void adjustSTR(int a){adjustStat(0,a);}	public void adjustDEX(int a){adjustStat(1,a);}	//mutators
+		public void adjustFOR(int a){adjustStat(2,a);}	public void adjustWIL(int a){adjustStat(3,a);}	
+		public void adjustINT(int a){adjustStat(4,a);}	public void adjustLCK(int a){adjustStat(5,a);}
+		
+		public void adjustStat(int index,int value){
+			stats[index]=Math.max(1, stats[index]+value);
+		}
 		
 		public void setStats(int[] startingStats){	//since this is only done on the player's creation and checks are made before it happens,  no error checks are needed here.
 			stats=startingStats;
@@ -676,28 +713,97 @@ public class Player extends Monster{
 			setHungerPoints(850);	//TODO: this is temporary. set hunger points differently if they vary or have a different constant.
 		}
 		
+		public void rearrangeStats() {
+		
+		int length=stats.length;
+		for(int i=length-1;i>0;i--){	//this for loop is the part that actually scrambles the letters
+			int index=dice.nextInt(i+1);
+			int tempStat=stats[index];
+			stats[index]=stats[i];
+			stats[i]=tempStat;
+		}
+		changeCurrentMessage("You feel like a completely different person.",currentTile,false);	 
+		}
+		
 		public void gainStatsRandom(int value) {
-			boolean[] statsRepeated={false,false,false,false,false,false,false};	//need to change the number of "false"s if number of stats changes.
+			boolean[] statsRepeated={false,false,false,false,false,false};	//need to change the number of "false"s if number of stats changes.
 			for(int i=0;i<value&&i<stats.length;i++){
 				int statIndex=dice.nextInt(statsRepeated.length);
 				while(statsRepeated[statIndex])
 					statIndex=dice.nextInt(value);
 				statsRepeated[statIndex]=true;
-				incrementStat(statIndex);
+				incrementStat(statIndex,true);
 			}
 		}
 		
-		private void incrementStat(int index) {	//TODO: append-to messages
-			switch(index){
-			case(0): adjustSTR(1); changeCurrentMessage("You feel strong!",currentTile,false); return;
-			case(1): adjustDEX(1); changeCurrentMessage("You feel nimble!",currentTile,false); return;
-			case(2): adjustFOR(1); changeCurrentMessage("You feel healthy!",currentTile,false); return;
-			case(3): adjustPER(1); changeCurrentMessage("You feel aware!",currentTile,false); return;
-			case(4): adjustWIL(1); changeCurrentMessage("You feel motivated!",currentTile,false); return;
-			case(5): adjustINT(1); changeCurrentMessage("You feel smart!",currentTile,false); return;
-			case(6): adjustLCK(1); changeCurrentMessage("You feel lucky!",currentTile,false); return;
+		//increment stats
+		public void incrementStat(String statName){
+			int index=0;
+			int length=STAT_NAMES.length;
+			while(index<length&&!statName.equals(STAT_NAMES[index])){
+				index++;
+			}
+			if(statName.equals(STAT_NAMES[index]))
+				incrementStat(index,true);
+		}
+		
+		public void incrementStat(String statName, int value) {
+			int index=0;
+			int length=STAT_NAMES.length;
+			while(index<length&&!statName.equals(STAT_NAMES[index])){
+				index++;
+			}
+			if(statName.equals(STAT_NAMES[index])){
+			for(int i=0;i<value;i++)
+				incrementStat(index,false);
 			}
 		}
+		
+		private void incrementStat(int index,boolean message) {	//TODO: put these messages somewhere else
+			switch(index){
+			case(0): adjustSTR(1); if(message) changeCurrentMessage("You feel strong!",currentTile,false); return;
+			case(1): adjustDEX(1); if(message) changeCurrentMessage("You feel nimble!",currentTile,false); return;
+			case(2): adjustFOR(1); if(message) changeCurrentMessage("You feel healthy!",currentTile,false); return;
+			case(3): adjustWIL(1); if(message) changeCurrentMessage("You feel motivated!",currentTile,false); return;
+			case(4): adjustINT(1); if(message) changeCurrentMessage("You feel smart!",currentTile,false); return;
+			case(5): adjustLCK(1); if(message) changeCurrentMessage("You feel lucky!",currentTile,false); return;
+			}
+		}
+		
+		//decrement stats
+		public void decrementStat(String statName) {
+			int index=0;
+			int length=STAT_NAMES.length;
+			while(index<length&&!statName.equals(STAT_NAMES[index])){
+				index++;
+			}
+			if(statName.equals(STAT_NAMES[index]))
+				decrementStat(index,true);
+		}
+		
+		public void decrementStat(String statName, int value) {
+			int index=0;
+			int length=STAT_NAMES.length;
+			while(index<length&&!statName.equals(STAT_NAMES[index])){
+				index++;
+			}
+			if(statName.equals(STAT_NAMES[index])){
+			for(int i=0;i<value;i++)
+				decrementStat(index,false);
+			}
+		}
+		
+		private void decrementStat(int index,boolean message) {
+			switch(index){
+			case(0): adjustSTR(-1); if(message) changeCurrentMessage("You feel weak.",currentTile,false); return;
+			case(1): adjustDEX(-1); if(message) changeCurrentMessage("You feel clumsy.",currentTile,false); return;
+			case(2): adjustFOR(-1); if(message) changeCurrentMessage("You feel feeble.",currentTile,false); return;
+			case(3): adjustWIL(-1); if(message) changeCurrentMessage("You feel timid.",currentTile,false); return;
+			case(4): adjustINT(-1); if(message) changeCurrentMessage("You feel stupid.",currentTile,false); return;
+			case(5): adjustLCK(-1); if(message) changeCurrentMessage("You feel unlucky.",currentTile,false); return;
+			}
+		}
+
 		//race methods
 	
 		public void setRace(String race) {
@@ -750,30 +856,68 @@ public class Player extends Monster{
 	}
 	
 	//hunger methods
-	
-	private void setHungerPoints(int points){
-		if(points>0){
-			hungerPoints[0]=points;
-			hungerPoints[1]=points;
-		}
+
+	private void hungerStep() {
+	if (currentHp()>0){
+		decrementHungerPoints();
 	}
-	
-	public void gainHungerPoints(int points){
-		if(points>0){
-			hungerPoints[0]=Math.min(hungerPoints[0]+points,hungerPoints[1]);		//TODO: do fullness checks and have fullness consequences where necessary.
-		}
+}	
+
+public String hungerState(){
+	int hunger=hungerPoints[0];
+	int index=0;
+	while(index<HUNGER_STATES.length-1){
+		if(hunger<hungerThresholds()[index])
+			return HUNGER_STATES[index];
+		index++;
 	}
+	return HUNGER_STATES[HUNGER_STATES.length-1];
+}
+
+public int[] hungerThresholds(){
+	int[] thresholds=new int [HUNGER_STATES.length-1];
+	thresholds[0]= (int) (hungerPoints[1]*0);
+	thresholds[1]= (int) (hungerPoints[1]*.2);
+	thresholds[2]= (int) (hungerPoints[1]*.4);
+	thresholds[3]= (int) (hungerPoints[1]*.6);
+	thresholds[4]= (int) (hungerPoints[1]*.7);
+	thresholds[5]= (int) (hungerPoints[1]*.8);
+	return thresholds;
+}
 	
-	private void decrementHungerPoints(){		//TODO: figure out how starvation works here. determine proper thresholds.
-		if (hungerPoints[0]>0)
-			hungerPoints[0]--;
-		//System.out.println(hungerPoints[0]);	//uncomment to help test hunger.
+private void setHungerPoints(int points){
+	if(points>0){
+		hungerPoints[0]=points;
+		hungerPoints[1]=points;
 	}
-	
-	public boolean full(){
-		return hungerPoints[0]==hungerPoints[1];
+}
+
+private void setCurrentHungerPoints(int points){
+	if(points>0)
+		hungerPoints[0]=points;
+}
+
+public void gainHungerPoints(int points){
+	if(points>0){
+		hungerPoints[0]=Math.min(hungerPoints[0]+points,hungerPoints[1]);		//TODO: do fullness checks and have fullness consequences where necessary.
 	}
-	
+}
+
+public void loseHungerPoints(int points){
+	changeCurrentMessage("You suddenly feel hungrier.",currentTile,false);
+	setCurrentHungerPoints(Math.max(0, hungerPoints[0]-points));
+}
+
+	private void decrementHungerPoints(){
+	if (hungerPoints[0]>0)
+		hungerPoints[0]--;
+	if (hungerPoints[0]<=0)
+		takeDamage(3, null, null);
+}
+
+public boolean full(){
+	return hungerPoints[0]==hungerPoints[1];
+}
 	//identification-related methods
 	
 	public void identifyAllItems(){
@@ -787,19 +931,32 @@ public class Player extends Monster{
 	@Override
 	public String displayItemName(Item item, boolean equipString){	//any method that displays item names should interface through this method.
 		String name="";
+		//System.out.println("got here");
+		if(item.getClass().equals(Potion.class)&&this.name.equals("Seb")){	//TODO: figure out what else needs to redirect here
+			return drPepperString(item.getAmount());	//TODO: sort out plurals and quantities
+		}
 		if(item!=null){
 			if(item.identified())
-				name=item.descriptiveName(PER());
+				name=item.descriptiveName();
 			else if(itemKnown(item))
 				name=item.trueName();	
 			else
 				name=item.genericName();
-			if(equipString&&item.getClass().equals(Equipment.class)&&((Equipment)(item)).equipped)
+			name=Item.pluralString(item,name,this);
+			if(equipString
+					&&item.getClass().equals(Equipment.class)
+					&&((Equipment)(item)).equipped)
 				name+=" [E]";
 		}
 		return name;	
 	}
 	
+	private String drPepperString(int amount) {	//list an amount of Dr Pepper
+		if(amount == 1)
+			return "Dr. Pepper";
+		return amount + " cans of Dr. Pepper";
+	}
+
 	public void identify(Item item){	//identifies a particular item, providing detailed information on it and "learning" its generic name.
 		
 		if(gameStarted){
@@ -818,6 +975,41 @@ public class Player extends Monster{
 		}
 	}
 	
+	public void sufferAmnesia() {
+		if(noItemsIdentified())
+			forgetMap();
+		int roll=dice.nextInt(2);
+		if(roll==0)
+			forgetMap();	
+		else
+			forgetAllItems();
+	}
+
+	private boolean noItemsIdentified() {
+		return inventory.noItemsIdentified();
+	}
+
+	private boolean allItemsIdentified() {
+		return inventory.allItemsIdentified();
+	}
+	
+	private void forgetMap() {
+		fov.forgetMap();
+		changeCurrentMessage("You feel strangely disoriented.",currentTile,false);
+	}
+	
+	private void forgetAllItems() {
+		if(!noItemsIdentified()){
+			int itemCount=inventory.getItemCount();
+			for(int i=0;i<itemCount;i++){
+				Item nextItem=inventory.getItem(i);
+				if(itemKnown(nextItem))
+					forgetItem(nextItem);
+			}
+			changeCurrentMessage("You feel oddly forgetful.",currentTile,false);
+		}
+	}
+
 	public void learnItem(Item item){
 		int index=0;
 		while(index<knownItems.length&&knownItems[index]!=null){
@@ -826,6 +1018,37 @@ public class Player extends Monster{
 			index++;
 		}
 		knownItems[index]=item.genericName();
+	}
+	
+	private void forgetItem(Item item) {
+		if(inventory.containsItem(item)&&item.identified()){
+			item.unidentify();
+			int index=knownItemsIndex(item);
+			int length=knownItems.length;
+			while(index<length&&knownItems[index]!=null&&knownItems[index+1]!= null){
+				if(index+1==length||knownItems[index+1]==null){
+					knownItems[index]=knownItems[index+1];
+					knownItems[index+1]=null;
+					return;
+				}		
+				knownItems[index]=knownItems[index+1];
+				index++;
+			}
+			knownItems[index]=null;
+		}
+	}
+	
+	//TODO: maybe knownItems should be a hashmap rather than an array?
+	
+	public int knownItemsIndex(Item item){
+		if(itemKnown(item)){
+			int index=0;
+			int length=knownItems.length;
+			while(index<length&&knownItems[index]!=null&&!(knownItems[index].equals(item.genericName())))
+				index++;
+			return index;
+		}
+		return -1;
 	}
 	
 	public boolean itemKnown(Item item){	//checks to see if the player knows this type of item. (NOTE: this method may vary depending on which items allow which other items to be recognized.)
@@ -863,6 +1086,19 @@ public class Player extends Monster{
 		return inventory.totalWeight();
 	}
 	
+	//sound methods
+	
+	@Override
+	public void hearSound(Monster source, Sound sound) {	//TODO: make sure the monster cannot be seen before sending the message.
+		if(!source.equals(this))
+			changeCurrentMessage("You hear "+sound+".",currentTile,false);	
+	}
+	
+	//teleport methods
+	public void levelTeleportPrompt() {
+		RogueLikeGui.frame.mainScreenL.promptLevelTeleport();
+	}
+	
 	//potion color methods
 	
 	public void setPotionColors(String[] dungeonPotionColors) {	//sets potion colors based on this particular dungeon's potion color setup
@@ -879,11 +1115,17 @@ public class Player extends Monster{
 	
 	private String getPotionColor(String[] dungeonPotionColors, Potion potion){
 		for(int i=0; i<dungeonPotionColors.length;i++){
-			if(potion.getPotionType().equals(Potion.POTION_NAMES[i]))
+			//System.out.println(potion.getPotionType());
+			if(potion.getPotionType().equals(Potion.POTION_TYPES[i]))
 				return dungeonPotionColors[i];
 		}
 		return null;
 		}
+	
+	public void chooseItem(Effect effect, String constraint) {	//choose an item to receive the effect.
+		RogueLikeGui.frame.mainScreenL.promptItemChoice(effect,constraint);
+	}
+	
 	
 	private Random dice=new Random();
 	public boolean gameStarted=false;
@@ -896,13 +1138,12 @@ public class Player extends Monster{
 	public Experience playerExperience=new Experience();
 	protected int[] magicPoints={0,0};
 	private int[] hungerPoints={0,0};
-	private int[] stats= new int[7];			//consider getting the '7' (number of stats) from a more central source.
-	public Spell[] spells = new Spell[100];		//should monsters have spells like this, too?
+	private int[] stats= new int[STAT_NAMES.length];			//consider getting the '7' (number of stats) from a more central source.
+	public Spell[] spells = new Spell[500];		//should monsters have spells like this, too?
 	//idea: could make a double-array of spells for different schools, or just 6 different arrays. (model the structure after Nick's
 	//non-code structure after it is confirmed.)
 	private SkillCategory[] skillSets;
-	public Level[] levelsVisited=new Level[400];	//levels the player has been to
-	private String[] knownItems=new String[1000];	//item types the player has identified
-
+	public Level[] levelsVisited=new Level[1000];	//levels the player has been to
+	private String[] knownItems=new String[5000];	//item types the player has identified	
 }
 	

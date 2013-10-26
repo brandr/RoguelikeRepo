@@ -8,11 +8,7 @@ public class Monster extends Entity{
 	public final int MAX_INVENTORY_SIZE=30;	//maximum inventory size
 	public final int INVENTORY_SLOTS=6;		//number of places to wear equipment
 	public final Weapon UNARMED=new Weapon("hands",0,Weapon.FISTS,Material.FLESH);
-	
-	public static final String UNINTELLIGENT="unintelligent";
-	public static final String INTELLIGENT="intelligent";
-	
-	public static final String[] MONSTER_INTELLIGENCES={UNINTELLIGENT,INTELLIGENT};
+	//NOTE: fists need to be more balanced
 	
 	Random randGenerator=new Random();
 	
@@ -49,6 +45,10 @@ public class Monster extends Entity{
 		name=monster.name;
 		setIcon(monster.getIcon());
 		color=monster.color;
+		monsterAIState=new AIState(AIState.IDLE,this);
+		monsterAIState.setIntelligence(monster.monsterAIState.getIntelligence());
+		//monsterAIState=monster.monsterAIState;
+				//new AIState(monster.monsterAIState);	//TODO: finish
 		
 		setHitPoints(monster.maxHitPoints());
 		setBaseDamage(monster.baseDamage);
@@ -56,6 +56,7 @@ public class Monster extends Entity{
 		baseArmor=monster.baseArmor;
 		toHitValue=monster.toHitValue;
 		dodgeValue=monster.dodgeValue;
+		turnDelay=monster.turnDelay;
 		
 		stunChance=monster.stunChance;
 		critChance=monster.critChance;
@@ -75,28 +76,28 @@ public class Monster extends Entity{
 	}
 	
 	public String currentMessageName() {	//refer to the player as "you" in some situations. May need to consider capitalization later.
-		if (getClass()==Player.class)
+		if (getClass().equals(Player.class))
 				return("You");
 		else
 			return name;
 	}
 	
 	public String reflexivePronoun(){
-		if (getClass()==Player.class)
+		if (getClass().equals(Player.class))
 			return "yourself";
 		else
 			return "itself";
 	}
 	
 	public String presentHelpingVerb() {
-		if (getClass()==Player.class)
+		if (getClass().equals(Player.class))
 			return("are");
 	else
 		return "is";
 	}
 	
 	public String pastHelpingVerb(){
-		if (getClass()==Player.class)
+		if (getClass().equals(Player.class))
 			return("were");
 	else
 		return "was";
@@ -106,7 +107,7 @@ public class Monster extends Entity{
 		changeCurrentMessage(currentMessageName()+" "+pastHelpingVerb()+" hit by an arrow!",currentTile,false);
 	}
 	
-	public String displayItemName(Item item, boolean equipString) {
+	public String displayItemName(Item item, boolean equipString) {	//TODO: this probably needs to be changed. It looks wrong.
 		return item.genericName();
 	}
 	
@@ -122,14 +123,16 @@ public class Monster extends Entity{
 		String message="";
 		if(!mobile){
 			int index = 0;
-			while(statuses[index]!=null){
-				if(statuses[index].getDuration()>0&&(statuses[index].getStatusType().equals(Status.IMMOBILE))){	
+			while(statuses.getStatus(index)!=null){
+				if(statuses.getStatus(index).getDuration()>0
+				&&(statuses.getStatus(index).getStatusType().equals(Status.IMMOBILE))){	
 					/*if(statuses[index].firstTurn&&this.getClass()!=Player.class){
 						message+=statuses[index].effectMessage(this);	//TODO: if monsters should display stun messages, set it so here.
 						return message;
 					}*/
-					if(!(this.getClass()!=Player.class&&statuses[index].getName().equals("stunned"))){	//this is a rough solution to a problem with stun messages.
-						message+=statuses[index].effectMessage(this);
+					if(!(this.getClass()!=Player.class
+						&&statuses.getStatus(index).getName().equals("stunned"))){	//this is a rough solution to a problem with stun messages.
+						message+=statuses.getStatus(index).effectMessage(this);
 						return message;
 					}
 				}
@@ -171,7 +174,7 @@ public class Monster extends Entity{
 	}
 	
 	private void decideMove(){
-		AIstate.decideMove();
+		monsterAIState.decideMove();
 	}
 
 	public boolean canSee(Tile tile){
@@ -262,6 +265,8 @@ public class Monster extends Entity{
 	
 	public Monster[] allEnemiesInSight(){ //returns all enemies in sight
 		Monster[] enemiesInSight=new Monster[100];
+		if(fov==null)
+			return null;
 		Monster[] allMonstersInSight=fov.visibleMonsters();	//TODO: this is the only part that needs to be changed
 		int index=0;
 		for(int i=0; i<allMonstersInSight.length;i++){
@@ -279,6 +284,13 @@ public class Monster extends Entity{
 		else
 			return false;
 	}
+	
+	public void mapAllLevel() {
+		fov.mapAllLevel();
+		if(this.getClass().equals(Player.class)){
+			changeCurrentMessage("You suddenly feel well-oriented.",currentTile,false);
+		}
+	}
 
 	//equipment consideration AI
 	
@@ -290,7 +302,7 @@ public class Monster extends Entity{
 				Equipment best = bestEquipment(slot);
 				if(!bestEquipped(slot)){
 					if(equippedItems.equipmentSlotFree(slot)){
-						if(best.getClass()==Weapon.class	//check to see if monster is trying to equip a two-handed weapon over a shield.
+						if(best.getClass().equals(Weapon.class)	//check to see if monster is trying to equip a two-handed weapon over a shield.
 						&& ((Weapon)best).twoHanded
 						&& !equipmentSlotFree(Equipment.OFF_HAND)){
 							equippedItems.unequipItem(Equipment.OFF_HAND);
@@ -320,13 +332,13 @@ public class Monster extends Entity{
 	}
 	
 	private boolean bestEquipped(String slot){	//see if the best equipment for this slot is already equipped.
-		if(slot==Equipment.OFF_HAND
+		if(slot.equals(Equipment.OFF_HAND)
 		&& bestEquipment(Equipment.WEAPON)!=null
 		&& ((Weapon)bestEquipment(Equipment.WEAPON)).twoHanded)//if slot is shield, get bestEquipment(Equipment.WEAPON_SLOT) and see if it is two-handed. if so, return "true".
 			return true;
 		if(bestEquipment(slot)==null)
 			return true;
-		return bestEquipment(slot)==equippedItems.getEquipmentInSlot(slot);
+		return bestEquipment(slot).equals(equippedItems.getEquipmentInSlot(slot));
 	}
 	
 	private boolean allBestEquipped(){		
@@ -364,8 +376,12 @@ public class Monster extends Entity{
 
 	//AI setters/getters
 	
+	public String getIntelligence() {
+		return monsterAIState.getIntelligence();
+	}
+	
 	public void setIntelligence(String intelligence) {
-		//TODO	
+		monsterAIState.setIntelligence(intelligence);
 	}
 	
 	//movement methods		(consider giving some of these their own class)
@@ -373,8 +389,9 @@ public class Monster extends Entity{
 	public void move (char direction){
 		if(mobile)
 			move(direction, 1);
-		else if(this.getClass()==Player.class)
+		else if(this.getClass().equals(Player.class))
 			changeCurrentMessage(immobilityMessage(),currentTile,false);
+		
 	}
 	
 	public void move(char direction, int magnitude){
@@ -388,18 +405,18 @@ public class Monster extends Entity{
 	
 	public void moveTo(int xPos, int yPos){		//since the player moveTo() overrides this one, it includes handling for monsters trying to move around obstacles.
 		//TODO: if monsters every move two spaces in a turn or teleport, need error handling to prevent moving onto solid objects, or out of the room.
-		if(getXPos()==xPos&&getYPos()==yPos){	//if the monster is moving to its own location, this happens.
+		if(getXPos()==xPos&&getYPos()==yPos)	//if the monster is moving to its own location, this happens.
 			return;
-		}
-		
 		if(currentLevel.containsTile(xPos, yPos)){
 			if(currentLevel.isPassable(xPos,yPos)
 			&& !(currentLevel.getTile(xPos, yPos).isVisibleTrap())){//the monster will go around visible traps, but not invisible ones.
 				currentTile.clear();
 				setPosition(xPos, yPos);
 				currentTile.monster=this;
-				if(currentTile.getClass()==Trap.class)
+				if(currentTile.getClass().equals(Trap.class))
 					((Trap)currentTile).trigger(this);	//TODO: if the trap can be dodged, switch this with another method for dodging traps.
+				else	//TODO: traps going off should create sounds that are not footsteps, and monsters without feet should not create footsteps.
+					currentLevel.addSound(new Sound("footsteps",3), currentTile);
 				return;
 				}
 			else if(currentLevel.getTile(xPos, yPos).monster!=null		//idea: keep some of this code for player, but prompt to decide whether or not to attack non-hostile monsters.
@@ -412,6 +429,14 @@ public class Monster extends Entity{
 				return;
 			}
 		}	
+	}
+	
+	public void moveRandom() {
+		Tile[] choices=adjacentEmptyTiles();
+		int randomIndex=dice.nextInt(choices.length);
+		while(choices[randomIndex]==null)
+			randomIndex=dice.nextInt(choices.length);
+		moveTowards(choices[randomIndex]);
 	}
 	
 	private void moveAround(char direction) {//this is for when the monster's path is blocked by a nonhostile but impassable entity.
@@ -448,7 +473,7 @@ public class Monster extends Entity{
 	
 	//NOTE: Consider moving stairs traversing method to player, (use @Override) and giving monsters a separate method.
 	public void goDownStairs(){							//TODO: if monsters other than the player can go down stairs, need to check if the stairs below are blocked.
-		if(currentTile.getClass()==Stairs.class){		
+		if(currentTile.getClass().equals(Stairs.class)){		
 			if(!((Stairs)currentTile).goUp()){
 								//if there are other ways to go down besides stairs, copy and paste some of this into another method		
 				Stairs downStairs=new Stairs((Stairs)currentTile);	//shallow copy problems?
@@ -457,13 +482,13 @@ public class Monster extends Entity{
 					changeCurrentMessage("Those stairs don't go anywhere. Sorry about that.",currentTile,true);
 					return;
 				}
-				currentLevel.removeMonster(this);
-				setCurrentLevel(nextLevel);	
+				currentLevel.removeMonster(this);	
+				setCurrentLevel(currentLevel.levelDungeon.getNextLevel(currentLevel,downStairs));	
 				Stairs upStairs=currentLevel.getLinkedUpStairs(downStairs);
 				currentLevel.addMonster(this, upStairs);				
 				currentTile.monster=this;
 				
-				if(this.getClass()==Player.class){
+				if(this.getClass().equals(Player.class)){
 					if(!((Player)this).hasVisitedLevel(currentLevel))	//if the level hasn't been visited before, add monsters.
 						((Player)this).visitLevel(currentLevel);
 				}
@@ -482,9 +507,9 @@ public class Monster extends Entity{
 	}
 	
 	public void goUpStairs(){
-		if(currentTile.getClass()==Stairs.class){		//TODO: just in case, do checks to see if there is a valid floor below.
+		if(currentTile.getClass().equals(Stairs.class)){		//TODO: just in case, do checks to see if there is a valid floor below.
 			if(((Stairs)currentTile).goUp()){
-				if(this.getClass()==Player.class
+				if(this.getClass().equals(Player.class)
 				&&currentLevel.floor==0){
 					die("");
 					RogueLikeGui.playerDeath.goToDeathScreen(
@@ -512,7 +537,7 @@ public class Monster extends Entity{
 				currentLevel.addMonster(this, downStairs);	
 				currentTile.monster=this;		
 				
-				if(this.getClass()==Player.class){
+				if(this.getClass().equals(Player.class)){
 					if(!((Player)this).hasVisitedLevel(currentLevel))	//if the level hasn't been visited before, add monsters.
 						((Player)this).visitLevel(currentLevel);
 				}
@@ -556,6 +581,23 @@ public class Monster extends Entity{
 			((Player)this).endPlayerTurn();
 		changeCurrentMessage(message,currentTile,true);
 		door.toggleOpen();
+	}
+	
+	public void goToLevel(Level nextLevel, Tile startTile){
+		currentLevel.removeMonster(this);
+		setCurrentLevel(nextLevel);	
+		currentLevel.addMonster(this, startTile);	
+		currentTile.monster=this;		
+		
+		if(this.getClass().equals(Player.class)){
+			if(!((Player)this).hasVisitedLevel(currentLevel))	//if the level hasn't been visited before, add monsters.
+				((Player)this).visitLevel(currentLevel);
+		}
+		
+		drawAllMonsterAggro();
+		changeCurrentMessage("",currentTile,true);
+		if(currentLevel.getBranch().levelType.equals(LevelGenerator.GLITCH))
+			changeCurrentMessage("IM SO SORRY",currentTile,true);
 	}
 	
 	//damage-related functions
@@ -776,7 +818,7 @@ public class Monster extends Entity{
 	//Item related functions
 	
 	public String pickUpMessageStart(){
-		if(getClass()==(Player.class))
+		if(getClass().equals((Player.class)))
 			return ("Picked up");
 		else
 			return(name+" picked up");
@@ -793,18 +835,13 @@ public class Monster extends Entity{
 	}
 	private void pickUpFullStack(Item pickingUpItem, int index) {
 		if(!inventory.isFull()){
-			changeCurrentMessage(pickUpMessageStart(),currentTile,false);
-			if(pickingUpItem.stackable()&&pickingUpItem.getAmount()!=1)
-				changeCurrentMessage(pickingUpItem.getAmount()+" "+Item.plural(displayItemName(pickingUpItem, false))+"."
-							,currentTile,false);
-			else
-				changeCurrentMessage(pickingUpItem.article()+" "+displayItemName(pickingUpItem, false)+"."
-						,currentTile,false);	
+			changeCurrentMessage(pickUpMessageStart()+" "
+						+ tileItemString(pickingUpItem),currentTile,false);
 			if(pickingUpItem.equippable())
 				((Equipment)pickingUpItem).equipped=false;
 			obtainItem(currentTile.tileItems.takeItem(index));	
 		}
-		else if(getClass()==(Player.class))
+		else if(getClass().equals((Player.class)))
 			changeCurrentMessage("No room for more items.",currentTile,true);
 	}
 	
@@ -820,13 +857,13 @@ public class Monster extends Entity{
 					heldStack.incrementStack();
 					if(pickingUpStack.getAmount()==1
 					|| heldStack.stackFull()){		//on the last item picked up, send a message.
-						currentTile.displayIcon();				
+						currentTile.displayIcon();		//TODO: change these messages
 						changeCurrentMessage(pickUpMessageStart(),currentTile,false);
-						if(unitsPickedUp!=1)
-							changeCurrentMessage(unitsPickedUp+" "+Item.plural(displayItemName(pickingUpStack, false))+"."
-									,currentTile,false);
-						else
-							changeCurrentMessage(pickingUpStack.article()+" "+displayItemName(pickingUpStack, false)+".",currentTile,false);
+						Item tempPickingUpItem = Item.copyItem(pickingUpStack);
+						tempPickingUpItem.setAmount(unitsPickedUp);
+						changeCurrentMessage(tileItemString(tempPickingUpItem),currentTile,false);
+						if(pickingUpStack.equippable())
+							((Equipment)pickingUpStack).equipped=false;
 					}	
 					pickingUpStack.decrementStack(currentTile.tileItems);
 				
@@ -841,6 +878,8 @@ public class Monster extends Entity{
 	}
 	
 	public int findStackableItem(Item pickingUpItem){
+		if(pickingUpItem == null)
+			return -1;
 		if(pickingUpItem.stackable()){
 		int index=0;
 		
@@ -864,7 +903,7 @@ public class Monster extends Entity{
 
 	public void pickUpAllTileItems(){
 		int index=0;
-		if(this.getClass()==Player.class)
+		if(this.getClass().equals(Player.class))
 			changeCurrentMessage("",currentTile,true);
 		Inventory tileItems=currentTile.tileItems;
 		if(!tileItems.noGold()){	//TODO: add an error case for max gold. (the fact that there isn't one may go unnoticed for a long time, since the max is so high.
@@ -873,7 +912,7 @@ public class Monster extends Entity{
 		}
 		while(tileItems.getItem(index)!=null && !inventory.isFull())
 			pickUpItem(index);
-		if(index==0&&inventory.isFull()&&getClass()==(Player.class))
+		if(index==0&&inventory.isFull()&&getClass().equals(Player.class))
 			changeCurrentMessage("No room for more items.",currentTile,false);
 	}
 	
@@ -898,51 +937,55 @@ public class Monster extends Entity{
 	//methods for dropping items
 	
 	public void dropItem(int index) {
-		if(getClass()==(Player.class)){
-			Item droppingItem=inventory.getItem(index);
-			changeCurrentMessage("Dropped a "+displayItemName(droppingItem, false)+".",currentTile,true);
+		if(getClass().equals((Player.class))){
+			Item droppedItem =inventory.getItem(index);	//TODO: start changing drop messages here.
+			changeCurrentMessage("Dropped "+tileItemString(droppedItem),currentTile,true);
 		}
 		else if(currentHp()>0){		//this check is necessary to make sure the monster is not simply dropping its items upon death.
-			//changeCurrentMessage(name+" dropped "+inventory.getItemName(index)+".",currentTile,false);	//TODO: if we want the player to see monsters dropping items first, need to have some checks here to make sure player can see this happening.
+			//changeCurrentMessage(name+" dropped "+inventory.getItemName(index)+".",currentTile,false);	
+			//TODO: if we want the player to see monsters dropping items first, need to have some checks here to make sure player can see this happening.
 		}
 		currentTile.addItem(inventory.takeItem(index));		//TODO: index args versus item args are inconsistent. decide which one to use.
 	}
 	
 	public void dropItemAmount(int itemIndex, int amount){	//drop only part of a stack.
 		if(hasItem(itemIndex)){
-			Item droppingItem=inventory.getItem(itemIndex);
-			Item droppedItem=droppingItem.copyItem(droppingItem);	
-			if(droppingItem.stackable()
-			&& droppingItem.enoughInStack(amount)){
-				if(droppingItem.getAmount()==amount)	//if there is exactly enough of this item
+			Item keptItem=inventory.getItem(itemIndex);
+			Item droppedItem=Item.copyItem(keptItem);	
+			if(keptItem.stackable()
+			&& keptItem.enoughInStack(amount)){
+				if(keptItem.getAmount()==amount)	//if there is exactly enough of this item
 					dropItem(itemIndex);
 				else{ 		//at this point, amount dropped is definitely less than the amount player has.
-					
-					if(amount>0){
-						if(getClass()==(Player.class))
-							changeCurrentMessage("Dropped ",currentTile,true);
-						else 
-							changeCurrentMessage(name+" dropped ",currentTile,false);	//can monsters drop limited item amounts? if so it will come up here
-						if(amount>1)
-							changeCurrentMessage(amount+" "+Item.plural(displayItemName(droppingItem, false))+".",currentTile,false);
-						else
-							changeCurrentMessage(droppingItem.article()+" "+displayItemName(droppingItem, false)+".",currentTile,false);
-					}
-					else
-						changeCurrentMessage("",currentTile,true);
-					droppingItem.adjustAmount(-1*amount);
+					keptItem.adjustAmount(-1*amount);
 					droppedItem.setAmount(amount);
 					currentTile.addItem(droppedItem);
+					if(amount>0){
+						if(getClass().equals((Player.class)))
+							changeCurrentMessage("Dropped ",currentTile,true);
+						else 
+							changeCurrentMessage(name+" dropped "+tileItemString(droppedItem),currentTile,false);	//can monsters drop limited item amounts? if so it will come up here
+						}
+				else
+					changeCurrentMessage("",currentTile,true);
 				}
 			}
 		}
 	}
 	
-	private void dropAllItems() {
-	for(int i=0;i<inventory.getItemCount();i++){
-		dropItem(i);
-		}
+private void dropAllItems() {
+for(int i=0;i<inventory.getItemCount();i++){
+	dropItem(i);
 	}
+}
+	
+private String tileItemString(Item item){	//how the item's name is represented when it is picked up/dropped
+	String itemName = displayItemName(item, false);
+	String article = "";
+	if(!item.enoughInStack(2))
+		article=Message.article(itemName)+" ";
+	return article+itemName+".";
+}
 	
 public void useItem(int index){
 			if(inventory.getItem(index)!=null){
@@ -1057,31 +1100,104 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	public boolean unarmed(){
 		return currentWeapon().weaponCategory.equals(Weapon.FISTS);
 	}
-		
-		//consumable methods
-		
-		public void consume(Consumable consumeStack){	//consumables can be either potions or food.
-			//TODO: error handling may be necessary if the player tries to eat something that isn't potion/food.
-			if (consumeStack.getClass()==Potion.class)
-				quaff((Potion)consumeStack);
-			else if (consumeStack.getClass()==Food.class)
-				eat((Food)consumeStack);
+	
+	//reading methods
+	
+	public void read(Scroll scroll){
+		String scrollName=scroll.genericName();
+		Scroll readScroll=(Scroll)scroll.singleShot(inventory,'0',null);
+		if(getClass().equals((Player.class))){
+			changeCurrentMessage("Read a",currentTile,true);
+			scrollName=((Player)this).displayItemName(readScroll, false);
 		}
+		else
+			changeCurrentMessage(name+" read a",currentTile,false);
+		changeCurrentMessage(scrollName+".",currentTile,false);
+		Targeting targeting=readScroll.getTargeting();
+		switch(targeting.getTargetingType()){
+			case(Targeting.ITEM_ALL):
+				filterChooseItems(scroll.getEffect(),targeting.getConstraint());
+				break;
+			case(Targeting.ITEM_CHOOSE):
+				if(this.getClass().equals(Player.class))
+					((Player)this).chooseItem(scroll.getEffect(),targeting.getConstraint());
+				break;
+			case(Targeting.ITEM_RANDOM):
+				randomlyChooseItem(scroll.getEffect(),targeting.getConstraint());
+				break;
+			case(Targeting.AREA_EXCLUDE_SELF):
+				TileList affectedArea=targeting.getAffectedArea(currentLevel,this.currentTile);
+				int length=affectedArea.length();
+				for(int i=0;i<length;i++){
+					Tile nextTile=affectedArea.getTile(i);
+					if(nextTile.containsMonster())
+						scroll.use(nextTile.monster);
+				}
+
+				//TODO: make case for monster reading a scroll and choosing an item, if necessary.
+				break;
+			default:
+				Monster[] monsterTargets=targeting.getTargets(this);
+				for(int i=0;i<monsterTargets.length&&monsterTargets[i]!=null;i++){
+					scroll.use(monsterTargets[i]);
+				}
+				break;
+		}
+	}
+		
+	private void filterChooseItems(Effect effect, String constraint) {
+		Inventory validItems = inventory.getItemsWithConstraint(constraint);
+		if(!validItems.isEmpty()){
+			int count = validItems.getItemCount();
+			for(int i = 0; i < count; i++){
+				effect.takeEffect(this,validItems.getItem(i));
+			}
+			if(effect.getEffectType().equals(Effect.REMOVE_CURSE)){
+				if(this.getClass().equals(Player.class))
+					changeCurrentMessage("You feel as though someone is helping you."
+							,currentTile,false);	//TODO: consider making this part more general for effect messages.
+			}
+		}
+		else if(this.getClass().equals(Player.class))
+			changeCurrentMessage(effect.noEffectMessage(),currentTile,false);
+	}
+
+	private void randomlyChooseItem(Effect effect, String constraint) {	//helper method for above method
+		Inventory validItems = inventory.getItemsWithConstraint(constraint);
+		if(!validItems.isEmpty()){
+			Item affectedItem = validItems.randomItem();
+			effect.takeEffect(this,affectedItem);
+		}
+		else if(this.getClass().equals(Player.class))
+			changeCurrentMessage(effect.noEffectMessage(),currentTile,false);
+	}
+	
+		//consumable methods
+
+
+	public void consume(Consumable consumeStack){	//consumables can be either potions or food.
+		//TODO: error handling may be necessary if the player tries to eat something that isn't potion/food.
+		//this should be handled before getting to this method, unless there are more "indirect" ways to eat implemented later.
+		if (consumeStack.getClass().equals(Potion.class))
+			quaff((Potion)consumeStack);
+		else if (consumeStack.getClass().equals(Food.class))
+			eat((Food)consumeStack);
+	}
 		
 		public void quaff(Potion potionStack) {	//TODO: if we want the player to see the names of potions that monsters drink, then this must be modified. (Will go along with "inPlayerView" boolean for monsters, once that is completed.)
 			String potionName=potionStack.colorName();
 			Potion quaffedPotion=(Potion) potionStack.singleShot(inventory,'0',null);
-			if(getClass()==(Player.class)){
-				changeCurrentMessage("Quaffed ",currentTile,true);
+			if(getClass().equals((Player.class))){
+				changeCurrentMessage("Quaffed a",currentTile,true);
 				potionName=((Player)this).displayItemName(quaffedPotion, false);
 			}
 			else
-				changeCurrentMessage(name+" quaffed ",currentTile,false);
+				changeCurrentMessage(name+" quaffed",currentTile,false);
 			changeCurrentMessage(potionName+".",currentTile,false);
 			quaffedPotion.use(this);
 		}
 		
-		public void eat(Food foodStack) {	//TODO: implement hunger effects
+		public void eat(Food foodStack) {	//TODO: implement the rest of hunger effects
 			Food eatenFood=(Food) foodStack.singleShot(inventory,'0',null);
 			if(getClass().equals(Player.class)){
 				if(!((Player)this).full())
@@ -1102,18 +1218,20 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		
 		//status-related methods
 		protected void statusesOccur(){
-			for(int i=0;i<statuses.length&&statuses[i]!=null;i++){
-				statuses[i].takeEffect(this);
+			int length=statuses.length();
+			for(int i=0;i<length&&statuses.getStatus(i)!=null;i++){
+				statuses.getStatus(i).takeEffect(this);
 			}
 			//decrementAllDurations();
 		}
 		
 		public void decrementAllDurations(){	//every turn, all nonzero status durations go down by 1.
 			int index = 0;						
-			while(statuses[index]!=null){
-				if(statuses[index].getDuration()>0){
-					if(statuses[index].firstTurn)
-						statuses[index].firstTurn=false;
+			while(statuses.getStatus(index)!=null){
+				Status nextStatus=statuses.getStatus(index);
+				if(nextStatus.getDuration()>0){
+					if(nextStatus.firstTurn)
+						nextStatus.firstTurn=false;
 					else
 						decrementDuration(index);
 				}
@@ -1122,37 +1240,27 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		}
 		
 		private void decrementDuration(int index) {
-			statuses[index].decrementDuration();
-			if(statuses[index].getDuration()<=0){
-				statuses[index].endEffect(this);
+			Status status=statuses.getStatus(index);
+			status.decrementDuration();
+			if(status.getDuration()<=0){
+				status.endEffect(this);
 				removeStatus(index);
 			}
 		}
 
-		public void addStatus(Status newStatus) {
-			if(newStatus.getDuration()>0){
-				int index = 0;
-				while(statuses[index]!=null)
-					index++;
-				statuses[index]=newStatus;
+		public void addStatus(Status newStatus) {	//maybe there should be a statusList? (hashmap, possibly)
+			if(newStatus!=null&&newStatus.getDuration()>0){
+				statuses.addStatus(newStatus);
+				newStatus.beginEffect(this);
 			}
-			newStatus.beginEffect(this);
+		}
+		
+		public void removeStatus(String statusName){
+			statuses.removeStatus(statusName);
 		}
 		
 		public void removeStatus(int index){		//will this always work? not sure.
-			int length=statuses.length;
-			if(index>=0&&index<length&&statuses[index]!=null){			
-				while(index<length-1&&statuses[index]!= null&&statuses[index+1]!= null){
-					if(index+1==length){
-						statuses[index]=statuses[index+1];
-						statuses[index+1]=null;
-						return;
-					}		
-					statuses[index]=statuses[index+1];
-					index++;
-				}
-				statuses[index]=null;
-			}
+			statuses.removeStatus(index);
 		}
 		
 		public void mobilize(){
@@ -1163,9 +1271,25 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 			mobile=false;
 		}
 		
+		public boolean confused() {
+			return statuses.containsStatus(Status.CONFUSION);
+		}
+		
+		public boolean silenced() {
+			return statuses.containsStatus(Status.SILENCING);
+		}
+		
+		//teleport methods
+		
 		public void teleport() {
 			Tile newTile=currentLevel.randomClearTile();
 			moveTo(newTile.xCoord,newTile.yCoord);
+		}
+		
+		public void blink() {
+			Tile newTile=fov.randomEmptyTileInView();
+			moveTo(newTile.xCoord,newTile.yCoord);
+			changeCurrentMessage(currentMessageName()+ " blinked!",currentTile,true);
 		}
 		
 		//xp methods
@@ -1196,8 +1320,9 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 		}
 		
 		protected void changeCurrentMessage(String message, Tile sourceTile,boolean overwrite){	//overwrite only overwrites if this monster is the player.
-			if(getClass().equals(Player.class)&&overwrite)
+			if(getClass().equals(Player.class)&&overwrite){
 				setCurrentMessage(message);
+			}
 			else if(playerInView())
 				appendToCurrentMessage(message);	
 			//only append if player is in monster's view. 
@@ -1206,7 +1331,7 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 			//	then checking to see if this monster is in the player's view.
 		}
 
-		protected void setCurrentMessage(String message) {	
+		protected void setCurrentMessage(String message) {	//TODO:
 			RogueLikeGui.currentMessage=message;
 		}
 		
@@ -1248,16 +1373,28 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	
 	//turn delay methods
 	
+	public void setTurnDelay(int turnDelay){
+		if(turnDelay>0)
+			this.turnDelay=turnDelay;
+	}
+	
 	public int getTurnDelay() {
 		return turnDelay;
 	}
 		
+	//sound methods
+	
+	public void hearSound(Monster source, Sound sound) {
+		if(!source.equals(this)&&hostileTowards(source))
+			monsterAIState.focusSound(source, sound);
+	}
+	
 	private Random dice = new Random();
 	public double spawnChance=1.0;
 
 	public FOV fov;
 	private int turnDelay=20;
-	private AIState AIstate=new AIState(AIState.IDLE,this);
+	private AIState monsterAIState=new AIState(AIState.IDLE,this);
 	
 	protected String name;
 	protected int[] hitPoints={0,0};	//two-int array, with first as current and second and maximum
@@ -1277,7 +1414,7 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	protected EquipmentSet equippedItems= new EquipmentSet(this);
 	
 	protected Monster[] enemyMonsters= new Monster[300];	//monsters that this monster will attack on sight.
-	protected Status[] statuses = new Status[100];
+	protected StatusList statuses = new StatusList();
 	
 	private boolean mobile=true;
 	
@@ -1286,5 +1423,4 @@ protected int thrownDistance(Item thrownItem) {	//maybe this should be for any i
 	public boolean stunnedLastTurn=false; //keeps track of whether this monster stunned another monster the last turn.
 
 	private Branch[] availableBranches=new Branch[Dungeon.BRANCH_COUNT];
-
 }

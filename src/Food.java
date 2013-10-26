@@ -1,11 +1,11 @@
 
-public class Food extends Consumable{	//TODO: implement hunger. Consult Nick since this is a game design decision.
+public class Food extends Consumable{	//TODO: implement food better.
 	public final static char STANDARD_FOOD_ICON='%';
 
 	public Food(String name, int hungerPoints){
 		genericName=name;
 		setHungerPoints(hungerPoints);
-		setEffect();
+		//setEffect();
 		setIcon(STANDARD_FOOD_ICON);
 	}
 
@@ -18,7 +18,7 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 		setStackSize(toCopy.getStackSize());
 		setAmount(toCopy.getAmount());
 		
-		effect=new Effect(toCopy.effect);
+		//effect=new Effect(toCopy.effect);
 		hungerPoints=toCopy.hungerPoints;
 		setIcon(toCopy.getIcon());
 	}
@@ -28,8 +28,9 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 		setAmount(1+dice.nextInt(getStackSize()));
 	}
 	
-	private void setEffect() {
-		effect=new Effect("fill",Effect.RESTORE_FULLNESS,hungerPoints,0);		//TODO: make sure this is right
+	@Override
+	public Effect getEffect(){
+		return new Effect("fill hunger",Effect.RESTORE_FULLNESS,hungerPoints,0);
 	}
 
 	@Override
@@ -49,7 +50,7 @@ public class Food extends Consumable{	//TODO: implement hunger. Consult Nick sin
 
 	@Override
 	public int getOverallValue() {
-		// TODO Auto-generated method stub
+		// TODO: determine value once non-corpse foods are implemented
 		return 0;
 	}
 	

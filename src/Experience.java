@@ -14,10 +14,15 @@ public class Experience {
 		experiencePoints[1]+=3*(int)Math.pow(1.8, level);	//this is a temporary formula
 	}
 	
+	public int expToNextLevel() {
+		return experiencePoints[1]-experiencePoints[0];
+	}
+	
 	public void gainExp(int exp){
 		experiencePoints[0]+=exp;
 	}
 	
 	protected int level=1;
 	protected int[] experiencePoints={0,FIRST_LEVEL_AT};
+	
 }

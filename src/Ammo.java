@@ -39,7 +39,9 @@ public class Ammo extends Item{
 		genericName=copyAmmo.genericName;
 		properWeapons=copyAmmo.properWeapons;
 		ammoStat=copyAmmo.ammoStat;
+		
 		identified=copyAmmo.identified;
+		
 		setAvailableBranches(copyAmmo.getAvailableBranches());
 		
 		setStackSize(copyAmmo.getStackSize());
@@ -111,7 +113,7 @@ public class Ammo extends Item{
 	}
 
 	@Override
-	public String descriptiveName(int perception){	//TODO: make more descriptive as ammo gets more attributes.
+	public String descriptiveName(){	//TODO: make more descriptive as ammo gets more attributes.
 		return "+0 "+getMaterial()+" "+name;
 	}
 	
@@ -123,6 +125,16 @@ public class Ammo extends Item{
 	@Override
 	public String genericName(){	//TODO: make more ways of setting this.
 		return genericName;
+	}
+	
+	@Override
+	public String plural(Player player){	//TODO: override for each item type
+		if(identified)
+			return "+0 "+getMaterial()+" "+name+"s";
+		else if(player.itemKnown(this))
+			return getMaterial()+" "+genericName+"s";
+		else
+			return genericName+"s";
 	}
 	
 	public void setHorizontal(){

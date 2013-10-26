@@ -39,6 +39,8 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	static final String TO_HIT = "toHit";
 	static final String EVASION_VALUE = "evasionValue";
 	
+	static final String TURN_DELAY = "turnDelay";
+	
 	static final String XP_REWARD = "xpReward";	//TODO: remove this.
 	
 	//static final String SPAWN_CHANCE = "spawnChance";
@@ -74,13 +76,14 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 			String name = "";
 	    	char icon = 0;
 	    	String color="000000";
-	    	String intelligence=Monster.INTELLIGENT;
+	    	String intelligence=AIState.INTELLIGENT;
 	    	
 	    	int hitPoints=-1;
 	    	int baseDamage=-1;
 	    	int baseArmor=-1;		//TODO: set defaults for all of these based on dungeon depth.
 	    	int toHit=-1;
 	    	int evasionValue=-1;
+	    	int turnDelay=20;	//TODO: make the default turn delay a final int somewhere.
 	    	int xp=-1;
 	    	
 	    	//double spawnChance=1.0;
@@ -93,8 +96,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        		String elementName=startElementName(event);
 	        		switch(elementName){
         				case(MONSTERS):
-	        			while(readUntil(reader, event,MONSTERS)){
-	        				//System.out.println("HI");
+	        			while(readUntil(reader,event,MONSTERS)){
 	        				event = reader.nextEvent();
 	        					if(event.isStartElement()
 	        					&&startElementName(event).equals(MONSTER)){
@@ -132,6 +134,8 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        									toHit=Integer.parseInt(reader.nextEvent().toString());break;
 	        								case(EVASION_VALUE):
 	        									evasionValue=Integer.parseInt(reader.nextEvent().toString());break;
+	        								case(TURN_DELAY):
+	        									turnDelay=Integer.parseInt(reader.nextEvent().toString());break;
 	        								default:
 	        									break;
 	        								}
@@ -151,6 +155,7 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        			
 												addedMonster=new Monster(name,icon,hitPoints,baseDamage,baseArmor,toHit,evasionValue);		//TODO: make sure monster constructors (including copy constructor) match up!
 												addedMonster.color=color;
+												addedMonster.setTurnDelay(turnDelay);
 												addedMonster.setIntelligence(intelligence);
 												addedMonster.xp=xp;
 												if(branches!=null		//this *should* ensure than no branch input means a monster is available on all branches.
@@ -167,13 +172,13 @@ public class MonsterReader {	//reads in monsters from the monster manual .xml fi
 	        								//defaults still necessary?
 												//branch=1;
 	        			        				color="000000";
-	        		        				
+	        			        				intelligence=AIState.INTELLIGENT;
 	        			        				hitPoints=-1;
 	        			        				baseDamage=-1;
 	        			        				baseArmor=-1;		//TODO: reset all defaults here. Add more as more defaults are added to the game.
 	        			        				toHit=-1;
 	        			        				evasionValue=-1;
-	        		        		    	
+	        			        				turnDelay=20;		//TODO: set up the default elsewhere.
 	        			        				xp=-1;
 	        		        		    	//defaults still necessary?
 	        			        				break;

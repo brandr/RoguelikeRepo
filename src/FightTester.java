@@ -4,6 +4,12 @@
  * 
 TODO category: bugs that need fixing
 
+game has crashed upon player trying to pick up ammo.
+	*the error appears to be either an infinite loop or a loss of player control,
+		because no error message is given. Look for recursive methods, while loops, etc.
+	*Try to figure out why by testing with different ammo amounts/types.
+	*also try testing ammo creation to ensure that no invalid ammo stacks get created.
+
 if a room is completely filled with monsters(and items, possibly) and the game tries to spawn a monster (or item) there, it crashes.
 	*NOTE: this seems to be becoming more common as I add more generation methods. (might be confirmation bias though.)
 	*this probably also happens if the whole level is full.
@@ -12,13 +18,11 @@ if a room is completely filled with monsters(and items, possibly) and the game t
 		 
 if game starts taking a long time to start, consider adding invisible doors/tunnels only when the player visits the level, same as traps.
 
-sometimes the screen "wiggles" (meaning everything in a row shifts right or left by one tile repeatedly) as a result of monster movement
-	*this problem is rare, so it probably results from a very specific combination of tiles (like monsters standing on stairs out of view, or something.)
-	
 Resizing the window causes fields to overlap when they shouldn't.
+	*consider making the window non-resizable.
 
 occasionally when a monster spawns, other monsters will stop attacking the player.
-	*this is subject to change as monster AI and hositility settings change. Keep an eye out for this bug.
+	*this is subject to change as monster AI and hostility settings change. Keep an eye out for this bug.
 
 have observed a stack overflow error when trying to pick up an item stack. not sure why. It seemed to happen when I had 85 arrows and tried to pick up 15, which makes me think it has to do with hitting the stack cap exactly.
 
@@ -29,25 +33,96 @@ TODO category: current goals
 		will need to do to complete the task. You can also add new tasks to this section if you think
 		they should be here.
 
-Consider making a Mind class to store a monster's knowledge, behavior patterns, etc
+CURRENT MAIN GOALS (Robert): 
+redesign monster AI (priorities instead of states)
+fix whatever is causing the game to freeze randomly (probably an infinite loop since there's
+	no error shown)
+	*first idea: have a "surrounded" check for monsters before they try to move. I strongly 
+		suspect monsters are infinitely searching for adjacent empty tiles when there are 
+		none.
+		*ideally make this part of the monster AI rework.
+implement enchantments (ROBERT)
+	*figure out where damage and toHit values should be added for both melee and ranged
+		weapons.
+	*implement armor enchantments
+		*have armor override enchant string method
+		*figure out where armor enchantment takes effect
+	*make ways of enchanting items (like scrolls)
+		*make methods to increments power and toHit by 1
+	*read nick's fancy little textbook thing
+	*make sure to change all the +0 parts of descriptive names to - or + enchantment
+	*make weapons and armor (and ammo?) spawn with enchantment levels (these levels are not set any sooner)
+Add read/quaff identification for potions/scroll and equip-identification for equipment
+test various combinations of cursing/uncursing all equipment types, as well as
+ 	attempting to remove them after cursing and uncursing
+fix inventory display so item names aren't truncated
+fix the way item names are displayed (i.e., pickup, drop, in-inventory names should all be
+	the same, and only equipString varies (and possibly the presence/absence of an article).
+	*to this end, override plurals and singulars for each item type. remaining:
+	*food
+	*spellbooks
 
+make the map larger, but only show the section immediately around the player.
+
+scrolls (Robert)
+	*more than halfway done, see Scroll class for details on scrolls remaining
+	*make scrolls spawn in the dungeon
+			
+fully set up potions (Robert)
+*pretty much done, but some work remains:
+TODO:
+*make sure different potions have different spawn rates, possibly influenced by level depth.
+*decide a good amount of potions to spawn per stack.
+*figure out what happens when player gets poisoned while already poisoned (make changes to addStatus in StatusList)
+*should luck be an invisible stat? if so, should it be included in the stats rearranged by metamorphosis?
+*get into details about heroism potions (should they increase toHit? what does "effective combat skill" mean?)
+*get into details with rage potions
+*wizardry potions have no effect. we can't have this.
+*silencing potions work, but have no effect on monsters. Use the silenced() check in
+	whatever AI code causes monsters to cast spells. (once it's written, that is)
+	*yells are silenced, too. 
+
+finish setting up sounds (Robert)
+	*sounds seem to work ok, but still need to decide which actions create sound.
+	*Also need to change the shape of sound from a rectangle to a ball.
+	*Messages that player receives about sounds also need to be more limited. 
+		(maybe wait until Message stuff gets further implemented)
+	*also consider different verisons of sound's "description" as well as what 
+	*	information monster AI will use sounds for.
+
+make Ben mode (Robert)
+	*set up, but may not work for strings that start with ( or " . fix this if it is necessary.
+	*Could probably do this by splitting the Punctuation component of messages into "startPunctuation" and "endPunctuation"
+	*Still missing some kind of advantage to being ben (just like in real life)
+
+finish chasing AI (Robert)
+	*instead of interruptable state-based structure, base the AI around "priorities" which are ordered and stored in an array
+		*Normally monster priorities are stored in final String arrays, each with its own name. Unique monsters should have unique priority lists, though.
+		*maybe PriorityList should be its own class which is accessed by AIState?
+	*If I end up keeping it, fix that one part of the AI state where the monster picks a planned tile nonrandomly (should be random)
+
+Consider making a Mind class to store a monster's knowledge, behavior patterns, etc
+consider limiting player name length (based on what will fit on the display)
+consider limiting how quickly things can happen if the player holds down a key 
+	(like wait or move)
+consider giving the player sass when they try to drop invalid amounts of items
+	(and possibly in other situations)
+	
 set up materials so that there cannot be cloth weapons, rocks made of anything other
  	than wood, etc (UNCLAIMED)
  	*excluded materials are set up, but not implemented. Use xml files and
  		ItemReader class to turn off materials as necessary
 
-set up food/hunger penalties (done by Nick, but he needs to push again.)
-
-fix turn structure (Robert)
-	*implemented, but may be wonky. also need to test monsters with varying turn delays.
-		*Make an unintelligent "slime" monster
-	*need to make sure this works well with potions, although that won't be much of an issue until potions are fully implemented.
-	*If the player and a monster have the same turn delay, the player moves first. (We think)
-	*This new system will affect monster/player speed, status effect durations (like stuns), message order, etc.
-	*Once it is implemented, test the system using a very slow monster (like a slime)
+fully set up turn structure (Robert)
+	*consider making different actions take different amounts of time, adding to turn delay.
+		*these actions will include movement, attacking, waiting, eating, equipping/unequipping,
+			quaffing potions, etc.
+		*may lead to monsters/items having new attributes (ex: weapon delay)
+	*If the player and a monster have the same turn delay, does the player moves first? should this be the case?
+	*This new system will affect monster/player speed, status effect durations (like stuns), message order, etc so test a lot.
 
 add burdening penalties (UNCLAIMED)
-	*will involve turn delay
+	*burdening will affect turn delay
 	
 reorganize the monster class so that monster-only methods are in a separate section 
 	(or a separate class altogether) (UNCLAIMED)
@@ -59,6 +134,18 @@ consider making action display scrollable (UNCLAIMED)
 massive monster/item spawning overhaul (Robert)
 
 	items:
+	1 scrolls	(Robert, partway done. See wizard class for currently functional scrolls.)
+	2 spellbooks
+	3 beatitude (cursed/uncursed only)
+		*implemented, but so far there is no way for items to spawn cursed. (only possible
+			through scrolls)
+	4 enchantments
+		*range from -15 to +15
+		*can also involve elements and effects of some kind (or are these brands?)
+	5 magic bling
+		*rings?
+		*amulets?
+	6 evocative (wands)
 	*Set up proper material selection (i.e, no cloth darts, wooden armor, etc)
 		*in XML files, add excludeMaterial" tags. (can only have one type, and unlisted materials are assumed to be all available or all not available.
 		*only armor should be cloth, and not all armor	
@@ -71,10 +158,7 @@ massive monster/item spawning overhaul (Robert)
 	*to make things more efficient, consider figuring out a way to choose N random elements from an array quickly (without repetition).
 	*also consider making the check for whether an item/monster belongs in a branch somewhat more efficient and organized.
 	*inventory creation (random monster items, gold, varying "layouts", etc.)
-		*the final creation should happen upon a monster's placement on a level, but should somehow be constrained before this point.
-	*AI types (just add an "unintelligent" one for testing)
-	*slightly better chasing AI	
-		*if the player is close enough and physically reachable, the monster can "see" no matter what (by hearing?)
+		*the final creation should happen upon a monster's placement on a level
 		*make monsters guess which way the player went, avoiding backtracking
 	*item seeking? (might branch too much into more complex AI)
 	*consider changing class hierachy to Monster>Humanoid> Player
@@ -89,7 +173,8 @@ consider removing the "genericName" private string from the item class (Robert)
 maybe change item copy constructors so they inherit certain things from Item (like copying identification, stack size, available branches, etc)
 
 fix standard level gen algorithm so it goes room->tunnel->room-> tunnel (or tunnel->room->tunnel, etc.)
-
+	*could also make it fancier around this stage (would go well with making levels larger
+		and the display centered on the player)
 TODO: sorted tasks
 
 EQUIPMENT STUFF
@@ -141,7 +226,8 @@ set up final material arrays for branches somehow. (similar to item spawn multip
 
 WEIGHT
 
-finish implementing all item weights (only food)
+finish implementing all item weights (food,scrolls,spellbooks, etc)
+burdening if it's not done by the time you read this
 
 NAMING/IDENTIFICATION
 
@@ -287,10 +373,58 @@ Adjust this fightTester class so it opens a massively simplified GUI which can b
 
 IDEA: consider giving every GUI screen relative weights for components (like in gridbaglayout, which is used for the main screen) and remove
 	screen sizes. this will make it easier for the player to resize the screen.
+
+EASTER EGGS
+	*some effect happens if the player uses the name of someone in lolchat.
+		*there should be an obvious disadvantage, but less obvious advantages
+		
+	*Ben: already implemented, but could apply to more onscreen text.
+		*still need an advantage to being ben (just like in real life)
 	
+	*Robert: can encounter a passive monster called Zach.
+		*Trying to attack Zach makes him "incinerate you with his swag beam."
+		*Talking to Zach yields the message "You tell zach to implement (level generation/FOV/magic/etc.). He ignores you.)
+		*In addition, you suffer periodic amnesia. (map only) (already implemented)
+
+	*Zach: a passive monster called Robert follows you around telling you to implement the above things.
+		*attacking him prompts him to say "okay, okay" and walk away. However, he comes back 100 ticks later to bother you again.
+		*You can kill him, but he respawns on the next level.
+		*Also, you have an item called "Zach's ego" which weighs a lot and reappears in your
+			inventory later if you try to drop it.
+			*the exact weight varies, and can sometimes shrink it the short run (over repeated drop attempts)
+				but increases in the long run (maybe a random # where the min keeps increasing?)
+	
+	*Nick
+		*You will sometimes find incredibly powerful items, only to "accidentally delete" them
+			from your inventory. (or maybe this randomly happens with non-artifacts?)
+	
+	*Stu
+		*You will occassionally encounter tiny egg-shaped mexican women. 
+			These are extraordinarily dangerous but give great exp and treasure.
+	
+	*Seb
+		*every potion is called Dr. Pepper, even after identified (implemented)
+	
+	*Gcuz
+		*periodically yells obscenities, attracting monsters. (behaves much like a normal yell.)
+	
+	*Johnny
+		?
+	*Alex
+		?
+	*John
+		*you suffer periodic amnesia. (item identification only)
+	
+	*Daniel
+		*all humans can sense you and are hostile towards you.
+	*Peter
+		*sometimes, when you attempt to consume food or a potion, you will spit it out,
+			believing that it sucks. (the item is then lost)
+
 MISC
 
 when player tries to move while paralyzed, remove messages before "you are paralyzed"
+	*may be affected by general message overhaul
 
 "also crafting skill affects this, and same for magic" (what did Nick mean when he said this about materials)	
 
@@ -458,7 +592,8 @@ Nick: It can wait until the game is nearly done. As can most of the flavor reall
 
 TODO category: unsorted tasks
 
-IDEA: maybe make a "dice" class with 'xdy' methods and range methods for easier randomization. (COMPLETED BY NICK, 2/9)
+make levels larger, and make the map screen follow the player rather than showing the whole level.
+model spell effects after the immolation effect, making common methods wherever possible/convenient.
 
 IDEA: add object/tile hallucination
 			 
@@ -540,8 +675,26 @@ import javax.xml.stream.XMLStreamException;
 public class FightTester {
   
 	public static void main(String[] args){
-		for(int i=0; i<30;i++){
-		System.out.println(Dice.xdy(2,6));
+		
+		//TODO: write tests here. also, one of these days, make a better testing system.
+		
+	}
+	
+	public static int sideLength(double slope, int otherSide){
+		return (int) Math.round(slope*otherSide);
+	}
+	
+	public static double slope(int x1,int x2, int y1, int y2){
+		return(double)(y2-y1)/(double)(x2-x1);
+	}
+	
+	public static void printTiles(char[][] tiles){
+		int size=tiles.length;
+		for(int j=0;j<size;j++){
+			for(int i=0;i<size;i++){
+				System.out.print(tiles[i][j]);
+			}
+			System.out.println();
 		}
 	}
 	

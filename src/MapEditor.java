@@ -39,7 +39,7 @@ public class MapEditor extends JPanel {
 	public static final int MAP_SCREEN_WIDTH=600;
 	public static final int MAP_SCREEN_HEIGHT=600;
 	
-	public static final String[] tileOptions= {"blank wall ( )","wall (X)","floor (·)","tunnel (#)","door (+)",
+	public static final String[] tileOptions= {"blank wall ( )","wall (X)","floor (ï¿½)","tunnel (#)","door (+)",
 											"down stairs (>)", "up stairs (<)"};
 	public static final char[] tileIcons={' ',Level.WALL_ICON, Level.EMPTY_TILE_ICON,Level.TUNNEL_ICON,Level.CLOSED_DOOR_ICON,
 		Level.DOWN_STAIRS_ICON, Level.UP_STAIRS_ICON};
@@ -62,8 +62,8 @@ public class MapEditor extends JPanel {
         		"To change the currently selected tile, use the drop-down menu" +
         		" below.");
         instructions.setWrapStyleWord(true);
-        final JComboBox<String> tileMenu=new JComboBox<String>(tileOptions);
-        final JComboBox<String> saveMenu=new JComboBox<String>(saveSlots);
+        final JComboBox tileMenu=new JComboBox(tileOptions);
+        final JComboBox saveMenu=new JComboBox(saveSlots);
         tileMenu.setSelectedIndex(2);
         saveMenu.setSelectedIndex(0);
         

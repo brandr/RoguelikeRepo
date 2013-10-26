@@ -3,7 +3,7 @@ import java.util.Random;
 
 public abstract class Item {		//other classes should interface, not inherit (since effects/functionality may differ greatly)
 
-	public final static Class<?>[] ITEM_CLASSES={Ammo.class,Armor.class,Food.class,Potion.class,Weapon.class};
+	public final static Class<?>[] ITEM_CLASSES={Ammo.class,Armor.class,Food.class,Potion.class,Scroll.class,Spellbook.class,Weapon.class};
 	public final static int MAX_STACK_SIZE=99;
 	public final static char[] ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
 	//constructors
@@ -20,7 +20,7 @@ public Item(String name){	//TODO: decide if this is necessary
 	setAmountSingle();
 }
 
-public Item copyItem(Item toCopy){
+public static Item copyItem(Item toCopy){
 	switch(toCopy.getClass().getCanonicalName()){	//cases are arranged alphabetically. add more as more item types are added.
 		case("Ammo"):
 			return new Ammo((Ammo)toCopy);
@@ -29,11 +29,15 @@ public Item copyItem(Item toCopy){
 		case("Food"):
 			return new Food((Food)toCopy);		
 		case("Potion"):
-			return new Potion((Potion)toCopy);	
+			return new Potion((Potion)toCopy);
+		case("Scroll"):
+			return new Scroll((Scroll)toCopy);
+		case("Spellbook"):
+			return new Spellbook((Spellbook)toCopy);
 		case("Weapon"):
 			return new Weapon((Weapon)toCopy);	
 		default:	
-			return this;
+			return null;
 	}
 }
 
@@ -60,6 +64,11 @@ public abstract boolean stackEquivalent(Item otherItem);
 public abstract int getOverallValue();
 
 	//toString
+public String amountString(){
+	if(enoughInStack(2))
+		return getAmount()+" ";
+	return "";
+}
 
 public String equippedToString() {
 	if(equippable())
@@ -86,8 +95,17 @@ public String trueName(){//TODO: override for every item type.
 	return name;
 }
 
-public String descriptiveName(int perception){	//TODO: override for every item type
+public String descriptiveName(){	//TODO: override for every item type
 	return name;
+}
+
+public static String pluralString(Item item, String itemName, Player player) {
+	if(item.enoughInStack(2)){
+		return item.getAmount()+" "+item.plural(player);
+	}
+		
+	else
+		return itemName;
 }
 
 public String singular(){	//returns the singular of the item. ("arrows" becomes "arrow")
@@ -105,8 +123,14 @@ public static String singular(String name){	//returns the singular of the projec
 		return name;
 }
 
-public String plural(){
-	String name=genericName(); //temporary
+public String plural(Player player){	//TODO: override for each item type
+	String name="";
+	if(identified)
+		name=descriptiveName();
+	else if(player.itemKnown(this))
+		name=trueName();
+	else
+		name=genericName();
 	if(name.charAt(name.length()-1)=='s')
 		return name+"es";
 	else
@@ -120,7 +144,9 @@ public static String plural(String name){
 		return name+"s";
 }
 
-public String article() {
+public String article() {	//TODO: this should take an argument so that the correct string is analyzed.
+		//EXAMPLE: "an uncursed bow" vs "a bow"
+		//consider making this a static method that takes a string arg, and moving it to Message class.
 	if(genericName==null)
 		return "a";
 	switch(genericName.charAt(0)){
@@ -137,6 +163,10 @@ public String article() {
 	default:
 		return "a";
 	}
+}
+
+public boolean isEquipment(){
+	return false;
 }
 	//could make this an abstract method to ensure that all items can collide properly
 public void collide(Monster thrower, Monster target) {		//item collides with a monster. should be overridden for weapons, which deal damage when they strike a monster.
@@ -252,10 +282,12 @@ public static String itemNameForLetterCommand(char letterCommand) {	//for use wi
 	//	return "Item";
 	//case(','):
 	//	return "Item";	//uncomment these if I want an error case for the default instead.
-	case('q'):		//can only drink potions
-		return "Potion";
 	case('e'):		//can only eat food
 		return "Food";
+	case('q'):		//can only drink potions
+		return "Potion";
+	case('r'):
+		return "Readable";
 	case('E'):		//can only equip equipment
 		return "Equipment";
 	default:
@@ -271,8 +303,29 @@ public static String noOptionsMessage(String itemType) {	//messages for when the
 		return "No potions to drink.";
 	case("Food"):		
 		return "Nothing to eat.";
+	case("Readable"):
+		return "Nothing to read.";
 	case("Equipment"):
 		return "No items can be equipped.";
+	default:
+		return "You can't do that.";	//this should be very rare, as far as I can tell. As more methods are implemented I may need to replace it with a more sophisticated message getter.
+	}
+}
+
+public static String noConstrainedOptionsMessage(String constraint) {	//this might replace the above method if things get too complicated
+	switch(constraint){
+	case(Targeting.UNIDENTIFIED):
+		return "All your items are already idenitfied.";
+	/*case("Item"):		//can only drink potions		//NOTE: don't delete this code block because it might be useful later.
+		return "No items in inventory.";				//may not always apply to inventory
+	case("Potion"):
+		return "No potions to drink.";
+	case("Food"):		
+		return "Nothing to eat.";
+	case("Readable"):
+		return "Nothing to read.";
+	case("Equipment"):
+//		return "No items can be equipped.";*/
 	default:
 		return "You can't do that.";	//this should be very rare, as far as I can tell. As more methods are implemented I may need to replace it with a more sophisticated message getter.
 	}
@@ -326,7 +379,7 @@ public void setWeight(double weight) {
 public boolean identified(){return identified;}
 
 public void identify(){identified=true;}
-
+public void unidentify() {identified=false;}	
 
 //throw methods
 
